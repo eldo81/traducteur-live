@@ -979,7 +979,7 @@ function readSettingsForm() {
   applyFontSize();
   // Si connecté : on applique à chaud ce qui peut l'être
   // Mode Écouteurs actif, ou changement de sortie audio : on relance proprement
-  const hsChanged = ['output', 'hsCallIn', 'hsMicIn', 'hsEarOut', 'hsCallOut', 'hsHearFr', 'hsMonitor', 'voice', 'accent', 'model', 'speed']
+  const hsChanged = ['output', 'hsCallIn', 'hsMicIn', 'hsEarOut', 'hsCallOut', 'hsHearFr', 'hsMonitor', 'voice', 'accent', 'model', 'customModel', 'speed', 'vad', 'transcribe']
     .some((k) => prev[k] !== S.settings[k]);
   if (S.mode && (Headset.isActive() || prev.output !== S.settings.output) && hsChanged) {
     const m = S.mode;

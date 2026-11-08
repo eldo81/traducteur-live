@@ -54,7 +54,7 @@ const Headset = (() => {
 
     const s = S.settings;
     const isCable = (l) => /cable|blackhole|voicemeeter|virtual|loopback/i.test(l);
-    fill('setHsCallIn', d.inputs, s.hsCallIn, (l) => /cable output(?!.*-a)|cable output$|blackhole 2ch/i.test(l));
+    fill('setHsCallIn', d.inputs, s.hsCallIn, (l) => /(^|\s)cable output|blackhole 2ch/i.test(l));
     fill('setHsMicIn', d.inputs, s.hsMicIn, (l) => !isCable(l));
     fill('setHsEarOut', d.outputs, s.hsEarOut, (l) => !isCable(l));
     fill('setHsCallOut', d.outputs, s.hsCallOut, (l) => /cable-a input|blackhole 16ch/i.test(l));
@@ -71,7 +71,7 @@ const Headset = (() => {
     });
     if (saved && devices.some((dv) => dv.deviceId === saved)) sel.value = saved;
     else {
-      const g = devices.find((dv) => dv.label && guess(dv.label));
+      const g = devices.find((dv) => dv.label && dv.deviceId !== 'default' && dv.deviceId !== 'communications' && guess(dv.label));
       if (g) sel.value = g.deviceId;
     }
   }
@@ -86,7 +86,7 @@ const Headset = (() => {
       return;
     }
     const s = S.settings;
-    if (!s.hsCallIn || !s.hsMicIn || !s.hsCallOut) {
+    if (!s.hsCallIn || !s.hsMicIn || !s.hsCallOut || !s.hsEarOut) {
       openSettings();
       toast('Choisissez les périphériques du mode Écouteurs, puis Enregistrer.', true);
       return;
@@ -103,11 +103,15 @@ const Headset = (() => {
     Object.keys(channels).forEach((k) => { if (!want.includes(k)) closeChannel(k); });
     setStatus('connecting', 'Écouteurs — connexion…');
     try {
-      for (const dir of want) if (!channels[dir]) await openChannel(dir);
-      if (S.mode !== mode) return; // Stop pressé pendant la connexion
-      startMonitor();
+      for (const dir of want) {
+        if (S.mode !== mode) return;                 // mode changé ou Stop pendant la connexion
+        await (channels[dir] ? channels[dir].ready : openChannel(dir));
+      }
+      if (S.mode !== mode) return;
+      await startMonitor();
       startMeter();
       await requestWakeLock();
+      if (S.mode !== mode) return;
       if (!S.usage.startedAt) S.usage.startedAt = Date.now();
       setStatus('on', 'Écouteurs — ' + labelMode(mode) + (want.length === 2 ? ' (2 sens)' : ''));
     } catch (err) {
@@ -120,8 +124,11 @@ const Headset = (() => {
 
   function stop() {
     Object.keys(channels).forEach(closeChannel);
-    if (monitorEl) { monitorEl.srcObject = null; monitorEl.remove(); monitorEl = null; }
+    stopMonitor();
     stopMeter();
+  }
+  function stopMonitor() {
+    if (monitorEl) { monitorEl.srcObject = null; monitorEl.remove(); monitorEl = null; }
   }
 
   const isActive = () => Object.keys(channels).length > 0;
@@ -129,14 +136,23 @@ const Headset = (() => {
   /* ---------------------------------------------------------------
    * Un canal = une session Realtime avec son entrée et sa sortie
    * ------------------------------------------------------------- */
-  async function openChannel(dir) {
-    const s = S.settings;
+  function openChannel(dir) {
     const ch = {
-      dir, pc: null, dc: null, stream: null, audio: null,
+      dir, pc: null, dc: null, stream: null, audio: null, ready: null,
       entries: new Map(), respToEntry: new Map(), pending: [], serverItems: [],
       silenced: new Set(), gen: S.gen,
     };
     channels[dir] = ch;
+    // Promesse partagée : un second démarrage attend ce canal au lieu de le dupliquer
+    ch.ready = connectChannel(ch).catch((e) => {
+      if (channels[dir] === ch) closeChannel(dir); else releaseChannel(ch);
+      throw e;
+    });
+    return ch.ready;
+  }
+
+  async function connectChannel(ch) {
+    const s = S.settings, dir = ch.dir;
     const alive = () => {
       if (channels[dir] === ch && ch.gen === S.gen) return;
       throw Object.assign(new Error('aborted'), { aborted: true });
@@ -157,6 +173,7 @@ const Headset = (() => {
     ch.audio.autoplay = true;
     const sink = fromCall ? s.hsEarOut : s.hsCallOut;
     if (sink) { try { await ch.audio.setSinkId(sink); } catch (e) { console.warn('setSinkId', e); toast('Sortie audio introuvable : vérifiez les Réglages.', true); } }
+    alive();
 
     const pc = new RTCPeerConnection();
     ch.pc = pc;
@@ -167,7 +184,13 @@ const Headset = (() => {
       if (pc.connectionState === 'failed') {
         toast('Écouteurs : canal « ' + labelMode(dir) + ' » perdu — reconnexion…', true);
         closeChannel(dir);
-        if (S.mode) setTimeout(() => { if (S.mode && !channels[dir]) openChannel(dir).catch((e) => toast(e.message, true)); }, 800);
+        const g = S.gen;
+        setTimeout(() => {
+          if (g !== S.gen || !(S.mode === 'auto' || S.mode === dir) || channels[dir]) return;
+          openChannel(dir)
+            .then(async () => { await startMonitor(); startMeter(); })
+            .catch((e) => { if (!e.aborted) toast(e.message, true); });
+        }, 800);
       }
     };
     const dc = pc.createDataChannel('oai-events');
@@ -217,6 +240,10 @@ const Headset = (() => {
     const ch = channels[dir];
     if (!ch) return;
     delete channels[dir];
+    if (dir === 'listen') stopMonitor();
+    releaseChannel(ch);
+  }
+  function releaseChannel(ch) {
     try { ch.dc && ch.dc.close(); } catch {}
     try { ch.pc && ch.pc.close(); } catch {}
     if (ch.stream) ch.stream.getTracks().forEach((t) => t.stop());
@@ -324,14 +351,17 @@ const Headset = (() => {
   /* ---------------------------------------------------------------
    * Voix originale en fond (volume 20 %) dans les écouteurs
    * ------------------------------------------------------------- */
-  function startMonitor() {
+  async function startMonitor() {
     const ch = channels.listen;
-    if (!S.settings.hsMonitor || !ch || monitorEl) return;
-    monitorEl = new Audio();
-    monitorEl.volume = 0.2;
-    if (S.settings.hsEarOut) monitorEl.setSinkId(S.settings.hsEarOut).catch(() => {});
-    monitorEl.srcObject = ch.stream;
-    monitorEl.play().catch(() => {});
+    if (!S.settings.hsMonitor || !ch || !ch.stream || monitorEl || !S.settings.hsEarOut) return;
+    const m = new Audio();
+    m.volume = 0.2;
+    monitorEl = m;
+    // Sortie écouteurs fixée AVANT la lecture : la voix originale ne doit jamais partir ailleurs
+    try { await m.setSinkId(S.settings.hsEarOut); } catch { stopMonitor(); return; }
+    if (monitorEl !== m) return;
+    m.srcObject = ch.stream;
+    m.play().catch(() => {});
   }
 
   /* ---------------------------------------------------------------
@@ -366,6 +396,8 @@ const Headset = (() => {
     cancelAnimationFrame(meterRaf);
     if (meterCtx) meterCtx.close().catch(() => {});
     meterCtx = null;
+    el.mic.classList.remove('active');
+    el.micLevel.style.width = '0';
   }
 
   return { supported, populate, start, stop, isActive, _channels: channels, _onEvent: onEvent };
