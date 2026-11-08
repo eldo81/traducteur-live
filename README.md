@@ -116,7 +116,7 @@ icons/          Icônes de l'application
 .nojekyll       Désactive le traitement Jekyll de GitHub Pages
 ```
 
-Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.4.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.4.1`) pour que les appareils déjà installés récupèrent la nouvelle version.
 
 ## 7. Dépannage
 
@@ -128,6 +128,8 @@ Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuelleme
 | Pas de son en mode Parle | Volume média de l'appareil traducteur, mode silencieux, ou Bluetooth connecté ailleurs. |
 | Le micro ne démarre pas | Autorisez le micro : Chrome → ⋮ → Paramètres → Paramètres des sites → Micro. |
 | L'app traduit dans la mauvaise langue | En Écoute ou Parle, la langue est forcée. La transcription de la phrase d'origine peut alors être erronée, mais pas la traduction. En Auto, parlez une phrase complète avant de faire une pause. |
+| Aucune traduction pendant un appel | 1) Le traducteur doit tourner sur un **2ᵉ appareil** : sur le téléphone de l'appel, Android réserve le micro à WhatsApp. 2) Posez le 2ᵉ appareil **à 10–30 cm** du téléphone d'appel, volume média au maximum. 3) Regardez l'historique : s'il se remplit, la traduction fonctionne et c'est le téléphone d'appel qui ne capte pas la voix ; s'il reste vide, le micro du traducteur n'entend pas la source. |
+| Source sans pause (TV, conférence) | L'app force une traduction toutes les 6 s de parole continue. Pour regarder un programme en anglais, utilisez **Écoute**, qui affiche des sous-titres sans couper le micro. |
 | L'écran s'éteint | Le Wake Lock exige que l'app reste au premier plan. Sinon, augmentez la mise en veille Android. |
 
 ## Technique (résumé)

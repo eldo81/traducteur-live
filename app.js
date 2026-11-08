@@ -17,6 +17,7 @@ const API = 'https://api.openai.com/v1';
 const LS = { key: 'tl.apiKey', settings: 'tl.settings', history: 'tl.history' };
 const MAX_CONTEXT_ITEMS = 10;   // éléments gardés côté serveur (contexte + maîtrise du coût)
 const MAX_HISTORY = 500;        // entrées gardées dans l'historique local
+const MAX_SEGMENT_MS = 6000;    // parole continue (TV, orateur sans pause) : traduction forcée toutes les 6 s
 const SILENT_MARK = '·';        // réponse "rien à traduire" (mauvaise langue pour le mode)
 
 const DEFAULTS = {
@@ -444,6 +445,7 @@ function reconnect() {
 
 function stopAll(isError) {
   S.gen++;
+  clearTimeout(S.segTimer);
   S.mode = null;
   S.connecting = false;
   clearTimeout(S.unmuteTimer); clearTimeout(S.safetyTimer);
@@ -481,9 +483,11 @@ function onEvent(ev) {
 
     case 'input_audio_buffer.speech_started':
       if (!S.aiSpeaking) setStatus('on', labelMode(S.mode) + ' — parole détectée…');
+      armSegmentTimer();
       break;
 
     case 'input_audio_buffer.speech_stopped':
+      clearTimeout(S.segTimer);
       setStatus('on', labelMode(S.mode) + ' — traduction…');
       break;
 
@@ -588,6 +592,8 @@ function onEvent(ev) {
       // Erreurs bénignes : élagage d'un item déjà supprimé, annulation sans réponse active
       if ((er.event_id || '').startsWith('del_')) break;
       if (er.code === 'response_cancel_not_active' || /no active response/i.test(er.message || '')) break;
+      // Effets de bord bénins du découpage forcé (parole continue)
+      if (er.code === 'input_audio_buffer_commit_empty' || /buffer too small|already has an active response/i.test(er.message || '')) break;
       console.warn('Realtime error', er);
       toast('OpenAI : ' + (er.message || 'erreur inconnue'), true);
       break;
@@ -633,6 +639,24 @@ function suppressResponse(respId, e) {
     setAiSpeaking(false);
   }
   removeEntryDom(e);
+}
+
+/* =====================================================================
+ * Parole continue : sans silence, la détection de fin de phrase ne se
+ * déclenche jamais (journal TV, orateur qui enchaîne). Toutes les 6 s de
+ * parole ininterrompue, on valide le segment et on demande sa traduction.
+ * ===================================================================== */
+function armSegmentTimer() {
+  clearTimeout(S.segTimer);
+  S.segTimer = setTimeout(forceSegment, MAX_SEGMENT_MS);
+}
+function forceSegment() {
+  if (!S.mode || !S.dc) return;
+  // L'app parle (micro coupé) ou une traduction est en cours : on réessaie un peu plus tard
+  if (S.aiSpeaking || S.currentRespId) { S.segTimer = setTimeout(forceSegment, 1000); return; }
+  send({ type: 'input_audio_buffer.commit' });
+  send({ type: 'response.create' });
+  armSegmentTimer(); // la parole continue : prochain découpage dans 6 s
 }
 
 /** Supprime les vieux items de la conversation serveur : contexte court = coût et latence maîtrisés. */
