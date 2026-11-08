@@ -1,0 +1,26 @@
+app = "lien-interprete-agent"
+primary_region = "cdg"
+kill_signal = "SIGINT"
+kill_timeout = "120s"   # laisse le temps aux appels en cours de se terminer (drain)
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  REALTIME_MODEL = "gpt-realtime-2"
+  REALTIME_FALLBACK_MODEL = "gpt-realtime-2.1-mini"
+  SUMMARY_MODEL = "gpt-5-mini"
+
+# Worker sans service HTTP public : il ouvre lui-même la connexion vers LiveKit.
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"
+
+[checks]
+  [checks.worker]
+    type = "http"
+    port = 8081
+    path = "/"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "30s"

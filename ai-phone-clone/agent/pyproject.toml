@@ -1,0 +1,22 @@
+[project]
+name = "lien-interprete-agent"
+version = "0.1.0"
+description = "Agent LiveKit de traduction simultanée (OpenAI Realtime) pour Lien Interprète"
+requires-python = ">=3.11"
+dependencies = [
+  "livekit-agents[openai]==1.8.11",
+  "livekit-plugins-openai==1.8.11",
+  "livekit==1.2.0",
+  "openai==3.46.0",
+  "httpx==0.28.1",
+  "python-dotenv==1.2.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0", "pytest-asyncio==1.4.1.post1"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = ["."]
