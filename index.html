@@ -89,14 +89,17 @@
 
       <label>Modèle
         <select id="setModel">
-          <option value="gpt-realtime">gpt-realtime (qualité)</option>
-          <option value="gpt-realtime-mini">gpt-realtime-mini (≈ 3× moins cher)</option>
-          <option value="gpt-realtime-2">gpt-realtime-2 (dernière génération)</option>
+          <option value="gpt-realtime-2.1">gpt-realtime-2.1 (qualité, recommandé)</option>
+          <option value="gpt-realtime-2.1-mini">gpt-realtime-2.1-mini (économique)</option>
+          <option value="gpt-realtime-2">gpt-realtime-2</option>
+          <option value="gpt-realtime-1.5">gpt-realtime-1.5</option>
+          <option value="gpt-realtime">gpt-realtime (obsolète — arrêt 20/01/2027)</option>
+          <option value="gpt-realtime-mini">gpt-realtime-mini (obsolète — arrêt 20/01/2027)</option>
           <option value="custom">Autre (saisir ci-dessous)</option>
         </select>
       </label>
       <label id="customModelWrap">Nom du modèle personnalisé
-        <input type="text" id="setCustomModel" spellcheck="false" placeholder="ex. gpt-realtime-2025-08-28">
+        <input type="text" id="setCustomModel" spellcheck="false" placeholder="ex. gpt-realtime-2.1">
       </label>
 
       <label>Voix
@@ -133,9 +136,9 @@
 
       <label>Transcription de la langue source
         <select id="setTranscribe">
-          <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe (économique)</option>
-          <option value="gpt-4o-transcribe">gpt-4o-transcribe (plus précis)</option>
-          <option value="whisper-1">whisper-1</option>
+          <option value="gpt-live-transcribe">gpt-live-transcribe (temps réel, recommandé)</option>
+          <option value="gpt-transcribe">gpt-transcribe (plus précis)</option>
+          <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe (obsolète — arrêt 26/02/2027)</option>
           <option value="off">Désactivée (pas de texte source)</option>
         </select>
       </label>
@@ -144,7 +147,7 @@
       <label class="check"><input type="checkbox" id="setHalfDuplex"> Anti-écho : couper le micro pendant que l'app parle</label>
 
       <div class="dialog-actions">
-        <button value="cancel" class="small-btn">Fermer</button>
+        <button type="button" class="small-btn" onclick="this.closest('dialog').close('cancel')">Fermer</button>
         <button value="save" id="btnSaveSettings" class="primary">Enregistrer</button>
       </div>
     </form>

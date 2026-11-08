@@ -135,7 +135,7 @@ dialog input[type="range"] { width: 100%; }
 
 /* ----- Toast ----- */
 .toast {
-  position: fixed; left: 50%; bottom: 190px; transform: translateX(-50%);
+  position: fixed; left: 50%; bottom: calc(200px + env(safe-area-inset-bottom)); transform: translateX(-50%);
   max-width: calc(100vw - 32px); background: #222c3a; border: 1px solid var(--line);
   padding: 10px 14px; border-radius: 12px; font-size: 14px;
   opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 10;

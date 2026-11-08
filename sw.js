@@ -1,7 +1,7 @@
 /* Service worker — met en cache l'interface (fonctionne hors ligne pour l'ouverture).
  * Les appels à api.openai.com ne sont JAMAIS mis en cache.
  * Incrémenter VERSION à chaque déploiement pour forcer la mise à jour. */
-const VERSION = 'tl-v1.0.0';
+const VERSION = 'tl-v1.1.0';
 const SHELL = [
   './',
   './index.html',
@@ -31,13 +31,16 @@ self.addEventListener('fetch', (e) => {
   // Uniquement les GET de notre propre origine ; tout le reste passe en direct
   if (e.request.method !== 'GET' || url.origin !== self.location.origin) return;
 
-  // Réseau d'abord (toujours la dernière version en ligne), cache en secours hors ligne
+  // Réseau d'abord (contourne le cache HTTP de GitHub Pages, max-age 600 s),
+  // avec 4 s de délai max ; cache en secours hors ligne ou réseau trop faible.
+  const fromCache = () => caches.match(e.request, { ignoreSearch: true })
+    .then((r) => r || (e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error()));
+  const net = fetch(e.request, { cache: 'no-cache' }).then((res) => {
+    if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(e.request, copy)); }
+    return res;
+  });
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000));
   e.respondWith(
-    fetch(e.request)
-      .then((res) => {
-        if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(e.request, copy)); }
-        return res;
-      })
-      .catch(() => caches.match(e.request, { ignoreSearch: true }).then((r) => r || caches.match('./index.html')))
+    Promise.race([net, timeout]).catch(() => fromCache().then((r) => (r && r.type !== 'error' ? r : net)))
   );
 });
