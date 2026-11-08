@@ -156,6 +156,7 @@ class Utterance:
     dst_final: bool = False
     suppressed: bool = False
     published_final: bool = False
+    speaker_locked: bool = False            # face-à-face : locuteur figé (fusion client par (speaker, seq))
     ended_at: str | None = None
     _last_partial: float = 0.0
 

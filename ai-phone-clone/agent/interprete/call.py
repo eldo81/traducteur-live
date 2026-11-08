@@ -205,7 +205,10 @@ class CallController:
             tr.detach_track(track.sid)
 
     def _on_data(self, packet: rtc.DataPacket) -> None:
+        # données client acceptées seulement en face-à-face et seulement depuis "host"
         if packet.topic != TOPIC_FACE_TURN or not self.cfg.face:
+            return
+        if packet.participant is None or packet.participant.identity != IDENTITY_HOST:
             return
         import json
 

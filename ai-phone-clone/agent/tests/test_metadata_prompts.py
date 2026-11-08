@@ -40,6 +40,11 @@ def test_face_flag_in_room_metadata():
     assert parse_room_config({**META, "face": True}).face is True
 
 
+def test_dispatch_metadata_same_json_plus_face_to_face():
+    cfg = parse_room_config(json.dumps(META), json.dumps({**META, "face_to_face": True}), room_name=RID)
+    assert cfg.face and cfg.room_id == RID and cfg.host_voice == "deep"
+
+
 def test_room_metadata_wins_over_job():
     cfg = parse_room_config(json.dumps(META), json.dumps({**META, "host_lang": "es"}))
     assert cfg.host_lang == "fr"
@@ -102,6 +107,8 @@ def test_voice_mapping():
     assert engine_voice("auto", "marin") == "marin"
     assert engine_voice("deep") == "cedar"
     assert engine_voice("SAGE") == "sage"
+    for v in ("marin", "cedar", "coral", "ash"):   # valeurs de l'app web
+        assert engine_voice(v, "marin") == v
     assert engine_voice("nope", "nope-too") == "marin"
 
 

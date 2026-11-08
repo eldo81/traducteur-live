@@ -260,3 +260,62 @@ async def test_reasoning_rejected_is_dropped():
     tr._handle_raw({"type": "error", "error": {"code": "unknown_parameter", "param": "session.reasoning", "message": "Unknown parameter"}})
     await drain()
     assert restarts == [""]
+
+
+async def test_face_hint_locks_speaker_for_all_captions():
+    tr, captions, finals = make_translator(face=True)
+    tr.face_hint = "guest"
+    ev = tr._handle_raw
+    ev({"type": "input_audio_buffer.committed", "item_id": "a"})
+    ev({"type": "conversation.item.input_audio_transcription.delta", "item_id": "a", "delta": "Bonjour je vous appelle"})
+    ev({"type": "response.created", "response": {"id": "r1"}})
+    ev({"type": "conversation.item.input_audio_transcription.completed", "item_id": "a", "transcript": "Bonjour, je vous appelle pour la commande"})
+    ev({"type": "response.output_audio_transcript.done", "response_id": "r1", "transcript": "Hello, I am calling about the order"})
+    ev({"type": "response.done", "response": {"id": "r1"}})
+    await drain()
+    assert captions and {(c["speaker"], c["seq"]) for c in captions} == {("guest", 10)}
+    assert (finals[0].lang_src, finals[0].lang_dst) == ("en", "fr")
+
+
+async def test_face_partials_wait_until_speaker_known_and_never_change():
+    tr, captions, finals = make_translator(face=True)
+    ev = tr._handle_raw
+    ev({"type": "input_audio_buffer.committed", "item_id": "a"})
+    ev({"type": "conversation.item.input_audio_transcription.delta", "item_id": "a", "delta": "12 345"})
+    await drain()
+    assert captions == []                      # langue inconnue : pas de partiel
+    ev({"type": "conversation.item.input_audio_transcription.delta", "item_id": "a", "delta": " hello what is the price"})
+    await drain()
+    ev({"type": "response.created", "response": {"id": "r1"}})
+    ev({"type": "conversation.item.input_audio_transcription.completed", "item_id": "a", "transcript": "12 345, hello what is the price"})
+    ev({"type": "response.output_audio_transcript.done", "response_id": "r1", "transcript": "12 345, bonjour quel est le prix"})
+    ev({"type": "response.done", "response": {"id": "r1"}})
+    await drain()
+    assert {(c["speaker"], c["seq"]) for c in captions} == {("guest", 10)}
+
+
+def test_face_turn_only_from_host_in_face_mode():
+    from types import SimpleNamespace
+
+    from interprete.call import CallController
+    from interprete.metadata import parse_room_config
+
+    meta = {"room_id": "3f1c2a9e-8b7d-4c6e-9a1b-2d3e4f5a6b7c", "host_lang": "fr", "guest_lang": "en"}
+    tr = SimpleNamespace(face_hint=None)
+
+    def packet(identity, payload, topic="face_turn"):
+        return SimpleNamespace(topic=topic, data=json.dumps(payload).encode(), participant=SimpleNamespace(identity=identity))
+
+    c = CallController(room=None, cfg=parse_room_config({**meta, "face_to_face": True}), settings=Settings(), store=None)
+    c.translators["host"] = tr
+    c._on_data(packet("guest", {"speaker": "guest"}))
+    assert tr.face_hint is None
+    c._on_data(packet("host", {"speaker": "guest"}))
+    assert tr.face_hint == "guest"
+    c._on_data(packet("host", {"speaker": "nobody"}))
+    assert tr.face_hint == "guest"
+    call = CallController(room=None, cfg=parse_room_config(meta), settings=Settings(), store=None)
+    tr2 = SimpleNamespace(face_hint=None)
+    call.translators["host"] = tr2
+    call._on_data(packet("host", {"speaker": "guest"}))
+    assert tr2.face_hint is None                # appel normal : données client ignorées

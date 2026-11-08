@@ -13,7 +13,7 @@ le statut d'appel et le résumé dans Supabase (clé `service_role`, jamais côt
 | configuration d'appel | métadonnées de la salle `{room_id, host_lang, guest_lang, host_voice, guest_voice, mute_original_host, mute_original_guest}` ; face-à-face si `face` ou `face_to_face` vaut `true` (salle ou métadonnées du job) |
 | traduction | une session Realtime **par locuteur** : le micro de `host` → piste `tr-for-guest` (host_lang→guest_lang), le micro de `guest` → piste `tr-for-host` (guest_lang→host_lang) |
 | anti-boucle | une session n'écoute que la piste **micro** de son participant ; les pistes traduites de l'agent ne sont jamais lues ; filtre logiciel d'écho (une sortie qui reprend ≥ 80 % des mots de ce que l'autre vient de dire est coupée) ; « · » = rien à traduire, jamais prononcé |
-| face-à-face | une seule session sur le micro de `host`, langue détectée à chaque phrase, sortie sur `tr-for-host` ; indice facultatif sur le topic `face_turn` (`{"speaker":"guest"}` ou `{"lang":"en"}`) |
+| face-à-face | une seule session sur le micro de `host`, langue détectée à chaque phrase, sortie sur `tr-for-host` ; le client publie `face_turn` `{"speaker":"host"|"guest"}` (accepté seulement en face-à-face et seulement de `host`) ; le locuteur d'une phrase est figé dès son premier sous-titre, car le client fusionne par `(speaker, seq)` |
 | sous-titres | topic `captions` : `{speaker, lang_src, text_src, lang_dst, text_dst, final, seq}` (texte source = transcription d'entrée, texte traduit = transcription de la sortie audio) ; partiels limités à ~7/s, puis un `final:true` par phrase |
 | facturation | `debit_call_tick(p_room, p_tick, p_seconds=15)` payé d'avance toutes les 15 s, **uniquement** si les deux participants sont là **et** que quelqu'un a parlé dans les 30 dernières secondes (attente, musique d'attente : pause, reprise à la parole suivante) ; topic `billing` : `{remaining_seconds}` à chaque tranche |
 | alertes | sous 120 s puis sous 30 s : `{remaining_seconds, warning_threshold}` sur `billing` + annonce vocale courte dans la langue de chacun |
@@ -27,8 +27,10 @@ le statut d'appel et le résumé dans Supabase (clé `service_role`, jamais côt
 `mute_original_*` est appliqué par les clients (ils ne s'abonnent pas au micro d'origine de
 l'autre) : l'agent ne coupe jamais une piste, car il en a besoin pour traduire.
 
-Voix : l'app envoie `auto | warm | clear | deep` → `marin | coral | marin | cedar` (ou un nom
-de voix OpenAI directement). Les langues de `CAPTIONS_ONLY_LANGS` (par défaut `wo`) sont
+Voix (côté locuteur) : `host_voice` prononce les paroles traduites de l'hôte sur
+`tr-for-guest`, `guest_voice` celles de l'invité sur `tr-for-host`. Valeurs : `auto`
+(→ `DEFAULT_VOICE`, `marin` par défaut) ou un nom de voix OpenAI (`marin`, `cedar`, `coral`,
+`ash`...). Les langues de `CAPTIONS_ONLY_LANGS` (par défaut `wo`) sont
 traduites en texte seulement, sans voix.
 
 ## Installation locale

@@ -239,7 +239,19 @@ class Translator:
         t.add_done_callback(self._tasks.discard)
 
     def _new_utterance(self) -> Utterance:
-        return Utterance(seq=self._seq.next(), speaker=self.speaker, lang_src=self.src_lang, lang_dst=self.dst_lang)
+        u = Utterance(seq=self._seq.next(), speaker=self.speaker, lang_src=self.src_lang, lang_dst=self.dst_lang)
+        if self.face and self.face_hint in ("host", "guest"):
+            # le client dit à qui c'est le tour (topic face_turn) : on s'y tient
+            self._set_face_speaker(u, self.face_hint)
+            u.speaker_locked = True
+        return u
+
+    def _set_face_speaker(self, u: Utterance, who: str) -> None:
+        a, b = self.src_lang, self.dst_lang          # a = langue hôte, b = langue invité
+        if who == "guest":
+            u.speaker, u.lang_src, u.lang_dst = "guest", b, a
+        else:
+            u.speaker, u.lang_src, u.lang_dst = "host", a, b
 
     def _on_raw(self, ev: dict) -> None:
         try:
@@ -370,30 +382,36 @@ class Translator:
             if self._source:
                 self._source.clear_queue()
 
-    def _resolve_face_langs(self, u: Utterance) -> None:
-        a, b = self.src_lang, self.dst_lang          # a = langue hôte, b = langue invité
+    def _resolve_face_langs(self, u: Utterance, final: bool = False) -> bool:
+        """Face-à-face : qui parle ? Le locuteur est figé dès le premier sous-titre envoyé,
+        car le client fusionne les sous-titres par (speaker, seq). Renvoie True si figé."""
+        if u.speaker_locked:
+            return True
+        a, b = self.src_lang, self.dst_lang
         lang = guess_lang(u.text_src, [a, b]) if visible(u.text_src) else None
         if lang is None and visible(u.text_dst):
             out = guess_lang(u.text_dst, [a, b])
-            lang = (b if out == a else a) if out else None
-        if lang is None and self.face_hint in ("host", "guest"):
-            lang = a if self.face_hint == "host" else b
-        if lang is None:
-            return
-        if lang == b.split("-")[0] or lang == b:
-            u.speaker, u.lang_src, u.lang_dst = "guest", b, a
-        else:
-            u.speaker, u.lang_src, u.lang_dst = "host", a, b
+            lang = (b.split("-")[0] if out == a.split("-")[0] else a.split("-")[0]) if out else None
+        if lang is None and not final:
+            return False
+        who = "guest" if lang is not None and lang == b.split("-")[0] else "host"
+        self._set_face_speaker(u, who)
+        u.speaker_locked = True
+        return True
 
     def _partial(self, u: Utterance) -> None:
         if u.published_final or u.suppressed:
             return
+        if self.face and not self._resolve_face_langs(u):
+            return  # locuteur encore inconnu : pas de sous-titre partiel
         if u.should_send_partial(time.monotonic()):
             self._spawn(self._on_caption(u.caption(final=False)))
 
     def _maybe_finalize(self, u: Utterance, force: bool = False) -> None:
         if u.published_final or not (u.complete or force):
             return
+        if self.face:
+            self._resolve_face_langs(u, final=True)
         u.published_final = True
         u.ended_at = utc_now_iso()
         if self.face:

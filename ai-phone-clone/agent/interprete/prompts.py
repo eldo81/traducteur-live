@@ -11,7 +11,8 @@ LANG_NAMES: dict[str, str] = {
     "pl": "Polish", "ro": "Romanian", "sw": "Swahili", "uk": "Ukrainian", "vi": "Vietnamese",
 }
 
-# Voix du moteur Realtime. L'app web envoie des identifiants opaques (auto/warm/clear/deep).
+# Voix du moteur Realtime. L'app web envoie "auto" (= voix par défaut) ou un nom de voix
+# (marin, cedar, coral, ash...). Les anciens alias warm/clear/deep restent acceptés.
 ENGINE_VOICES = {"alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"}
 VOICE_ALIASES = {"warm": "coral", "clear": "marin", "deep": "cedar"}
 
