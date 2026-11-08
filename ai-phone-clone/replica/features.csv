@@ -1,0 +1,39 @@
+feature,area,priority,original,clone,notes
+Créer un appel traduit et générer un lien unique,appel lien,must,yes,no,cœur du produit (S04-S05)
+Partager le lien via WhatsApp et autres apps (feuille de partage),appel lien,must,yes,no,WhatsApp ne transporte que le lien
+Invité rejoint depuis le lien sans app ni compte,appel lien,must,yes,no,page web WebRTC (S06)
+Choix langue Moi / langue Autre avant l'appel,appel lien,must,yes,no,
+Traduction voix vers voix dans les deux sens,traduction,must,yes,no,
+Sous-titres bilingues en direct des deux côtés,traduction,must,yes,no,
+Appel voix seule,appel lien,must,yes,no,
+Contrôles d'appel : couper micro / raccrocher / haut-parleur,appel,must,yes,no,
+Aide si le navigateur intégré WhatsApp bloque le micro,appel lien,must,yes,no,FAQ originale : copier le lien dans le navigateur
+Transcription complète enregistrée,historique,must,yes,no,
+Historique des appels,historique,must,yes,no,S02
+Compte hôte (email ou Google),compte,must,yes,no,
+Compteur de minutes et solde visible,facturation,must,yes,no,
+Clé API du moteur jamais exposée au navigateur,sécurité,must,n/a,no,jetons éphémères côté serveur
+Mode face-à-face (écran partagé),face-à-face,must,yes,no,S10
+Langues : au moins FR / EN / ES / AR / PT / wolof si dispo,traduction,must,yes,no,original annonce 150+
+Appel vidéo avec sous-titres,appel lien,should,yes,no,
+Choix de la voix de traduction,traduction,should,yes,no,
+Couper la voix originale de chaque côté,traduction,should,yes,no,
+Résumé IA de l'appel + points clés,historique,should,yes,no,
+Partager / exporter la transcription,historique,should,yes,no,
+Type-to-Speak (taper un nom/numéro qui est prononcé),appel,should,yes,no,
+Abonnement + paiement,facturation,should,yes,no,à repenser : plainte n°1 = abonnement + crédits
+Packs de crédits / recharge,facturation,should,yes,no,
+Avertissement avant crédits épuisés (pas de coupure sèche),facturation,should,no,no,amélioration vs plainte
+Interface de l'app en FR / EN,compte,should,yes,no,original : 16 langues
+Réponses rapides pendant l'appel,appel,could,yes,no,
+Mode écoute (conférence / réunion),face-à-face,could,yes,no,
+Traduction photo / document (OCR),extras,could,yes,no,hors cœur
+Traduction texte,extras,could,yes,no,hors cœur
+Traduction de l'écran / audio en lecture,extras,could,yes,no,iOS via Raccourcis
+Appels vers un vrai numéro avec traduction,téléphonie,could,yes,no,V2 : fournisseur télécom + coûts par pays
+Numéro appelant vérifié (le sien),téléphonie,could,yes,no,V2
+Apps natives iOS / Android,plateforme,could,yes,no,V1 en PWA ; stores ensuite
+Traduire dans un vrai appel WhatsApp natif,appel,skip,no,skip,impossible techniquement ; l'original ne le fait pas non plus
+Numéro virtuel US inclus + SMS / messagerie,téléphonie,skip,yes,skip,licences/KYC/spam ; inutile pour Afrique-Europe en V1
+Intégration écouteurs TransAI,extras,skip,yes,skip,partenariat matériel
+Marque / logo / textes / voix d'AI Phone,marque,skip,yes,skip,appartient à AI Phone
