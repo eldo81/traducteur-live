@@ -34,11 +34,15 @@ export function isRtl(code: string): boolean {
   return LANGUAGES.find((l) => l.code === code)?.rtl === true;
 }
 
-/** Voice ids are opaque to the web app; the agent maps them to engine voices. */
+/**
+ * Voice ids sent in room metadata. "auto" = agent default; the others are
+ * OpenAI Realtime voice names, which the agent can pass through as-is.
+ */
 export const VOICES: readonly { id: string; label: string }[] = [
   { id: "auto", label: "Automatique" },
-  { id: "warm", label: "Chaleureuse" },
-  { id: "clear", label: "Claire" },
-  { id: "deep", label: "Grave" },
+  { id: "marin", label: "Marin (douce)" },
+  { id: "cedar", label: "Cedar (posée)" },
+  { id: "coral", label: "Coral (vive)" },
+  { id: "ash", label: "Ash (grave)" },
 ];
 export const VOICE_IDS = VOICES.map((v) => v.id) as [string, ...string[]];

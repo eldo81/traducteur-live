@@ -21,7 +21,7 @@ export const stripeProvider: PaymentProvider = {
           price_data: {
             currency: "eur",
             unit_amount: pack.eur_cents,
-            product_data: { name: `${pack.minutes} minutes de traduction` },
+            product_data: { name: `${pack.name} - ${pack.minutes} minutes de traduction` },
           },
         },
       ],

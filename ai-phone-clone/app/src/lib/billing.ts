@@ -1,6 +1,6 @@
 /** Thresholds decided by the UI (the agent only sends remaining_seconds). */
-export const LOW_BALANCE_SECONDS = 180; // first warning: 3 minutes left
-export const CRITICAL_BALANCE_SECONDS = 60; // second warning: 1 minute left
+export const LOW_BALANCE_SECONDS = 120; // first warning: 2 minutes left
+export const CRITICAL_BALANCE_SECONDS = 30; // second warning: 30 seconds left
 /** Host token is refused below this balance (architecture.md). */
 export const MIN_START_SECONDS = 30;
 

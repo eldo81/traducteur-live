@@ -37,6 +37,10 @@ export const TOPIC_BILLING = "billing";
  * "Couper sa voix d'origine".) Clients apply it by not subscribing to the
  * other participant's microphone track; when false, the original is played
  * at low volume under the translation. The agent may also read it.
+ *
+ * host_voice / guest_voice are speaker-centric too: host_voice is the voice that
+ * speaks the HOST's words in the guest's language (track "tr-for-guest");
+ * guest_voice speaks the GUEST's words to the host ("tr-for-host"). "auto" = agent default.
  */
 export const roomMetadataSchema = z.object({
   room_id: z.uuid(),

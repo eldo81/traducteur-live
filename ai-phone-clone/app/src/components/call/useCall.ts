@@ -108,7 +108,6 @@ export function useCall(opts: UseCallOptions) {
     room: null,
   });
   const roomRef = useRef<Room | null>(null);
-  const audioHostRef = useRef<HTMLDivElement | null>(null);
 
   const patch = useCallback((p: Partial<CallState> | ((s: CallState) => Partial<CallState>)) => {
     setState((s) => ({ ...s, ...(typeof p === "function" ? p(s) : p) }));
@@ -122,6 +121,10 @@ export function useCall(opts: UseCallOptions) {
       audioCaptureDefaults: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
     });
     roomRef.current = room;
+    // Hidden container for the <audio> elements of subscribed tracks.
+    const audioHost = document.createElement("div");
+    audioHost.hidden = true;
+    document.body.appendChild(audioHost);
 
     const other = otherRole(role);
     const refreshPresence = () => {
@@ -159,7 +162,7 @@ export function useCall(opts: UseCallOptions) {
       });
       const el = track.attach();
       el.setAttribute("data-track", pub.trackName || participant.identity);
-      (audioHostRef.current ?? document.body).appendChild(el);
+      audioHost.appendChild(el);
       if ("setVolume" in track && typeof track.setVolume === "function") track.setVolume(d.volume || 1);
     };
 
@@ -223,6 +226,7 @@ export function useCall(opts: UseCallOptions) {
       cancelled = true;
       room.removeAllListeners();
       void room.disconnect();
+      audioHost.remove();
       roomRef.current = null;
     };
   }, [livekitUrl, token, role, patch]);
@@ -278,5 +282,5 @@ export function useCall(opts: UseCallOptions) {
     }
   }, []);
 
-  return { ...state, audioHostRef, toggleMic, startAudio, leave, publishTurn };
+  return { ...state, toggleMic, startAudio, leave, publishTurn };
 }

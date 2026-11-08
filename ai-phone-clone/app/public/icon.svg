@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Lien Interprète">
+  <rect width="512" height="512" rx="112" fill="#0A6660"/>
+  <path d="M96 150a46 46 0 0 1 46-46h148a46 46 0 0 1 46 46v86a46 46 0 0 1-46 46h-92l-62 50v-50a46 46 0 0 1-40-46z" fill="#FFFFFF"/>
+  <path d="M196 282h94a46 46 0 0 0 46-46v-30h34a46 46 0 0 1 46 46v86a46 46 0 0 1-46 46h-6v50l-62-50h-60a46 46 0 0 1-46-46z" fill="#FBEEDC"/>
+  <rect x="142" y="168" width="148" height="20" rx="10" fill="#0A6660"/>
+  <rect x="142" y="206" width="96" height="20" rx="10" fill="#0A6660"/>
+  <rect x="238" y="320" width="132" height="20" rx="10" fill="#7A4A00"/>
+  <rect x="238" y="358" width="84" height="20" rx="10" fill="#7A4A00"/>
+</svg>
