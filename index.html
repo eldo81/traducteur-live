@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="description" content="Interprète vocal simultané anglais ↔ français (OpenAI Realtime).">
+  <title>Traducteur Live</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ===== En-tête : statut, niveau micro, réglages ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span id="statusDot" class="dot" aria-hidden="true"></span>
+      <div>
+        <h1>Traducteur Live</h1>
+        <p id="statusText" class="status">Prêt — choisissez un mode</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div id="micIndicator" class="mic" title="Micro">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>
+        <span class="meter"><span id="micLevel"></span></span>
+      </div>
+      <button id="btnSettings" class="icon-btn" aria-label="Réglages">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3.3h-4l-.4 2.6a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5L19.4 13ZM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" transform="translate(-1 0)"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Sous-titre en direct ===== -->
+  <section class="live" aria-live="polite">
+    <div id="liveDir" class="live-dir">—</div>
+    <div id="liveSrc" class="live-src"></div>
+    <div id="liveDst" class="live-dst">Appuyez sur Écoute, Parle ou Auto.</div>
+  </section>
+
+  <!-- ===== Historique bilingue ===== -->
+  <section class="history-wrap">
+    <div class="history-bar">
+      <span>Historique <span id="histCount" class="muted">(0)</span></span>
+      <span class="muted" id="usage"></span>
+      <div class="history-actions">
+        <button id="btnCopy" class="small-btn">Copier</button>
+        <button id="btnExport" class="small-btn">Exporter .txt</button>
+        <button id="btnClear" class="small-btn danger">Effacer</button>
+      </div>
+    </div>
+    <ol id="history" class="history"></ol>
+  </section>
+
+  <!-- ===== Commandes principales ===== -->
+  <nav class="controls">
+    <button class="mode-btn" data-mode="listen" id="btnListen">
+      <span class="mode-title">Écoute</span><span class="mode-sub">EN → FR</span>
+    </button>
+    <button class="mode-btn" data-mode="speak" id="btnSpeak">
+      <span class="mode-title">Parle</span><span class="mode-sub">FR → EN 🔊</span>
+    </button>
+    <button class="mode-btn" data-mode="auto" id="btnAuto">
+      <span class="mode-title">Auto</span><span class="mode-sub">EN ⇄ FR</span>
+    </button>
+    <button class="stop-btn" id="btnStop" disabled>Stop</button>
+  </nav>
+
+  <!-- Sortie audio de l'IA (flux WebRTC distant) -->
+  <audio id="remoteAudio" autoplay playsinline></audio>
+
+  <!-- ===== Réglages ===== -->
+  <dialog id="settings">
+    <form method="dialog" id="settingsForm">
+      <h2>Réglages</h2>
+
+      <label>Clé API OpenAI
+        <div class="row">
+          <input type="password" id="setKey" autocomplete="off" spellcheck="false" placeholder="sk-proj-...">
+          <button type="button" id="btnShowKey" class="small-btn">👁</button>
+        </div>
+        <small>Stockée uniquement dans ce navigateur (localStorage). Jamais envoyée ailleurs qu'à api.openai.com.</small>
+      </label>
+      <div class="row">
+        <button type="button" id="btnTestKey" class="small-btn">Tester la clé</button>
+        <span id="keyResult" class="muted"></span>
+      </div>
+
+      <label>Modèle
+        <select id="setModel">
+          <option value="gpt-realtime">gpt-realtime (qualité)</option>
+          <option value="gpt-realtime-mini">gpt-realtime-mini (≈ 3× moins cher)</option>
+          <option value="gpt-realtime-2">gpt-realtime-2 (dernière génération)</option>
+          <option value="custom">Autre (saisir ci-dessous)</option>
+        </select>
+      </label>
+      <label id="customModelWrap">Nom du modèle personnalisé
+        <input type="text" id="setCustomModel" spellcheck="false" placeholder="ex. gpt-realtime-2025-08-28">
+      </label>
+
+      <label>Voix
+        <select id="setVoice">
+          <option value="marin">marin (recommandée)</option>
+          <option value="cedar">cedar (recommandée)</option>
+          <option value="alloy">alloy</option>
+          <option value="ash">ash</option>
+          <option value="ballad">ballad</option>
+          <option value="coral">coral</option>
+          <option value="echo">echo</option>
+          <option value="sage">sage</option>
+          <option value="shimmer">shimmer</option>
+          <option value="verse">verse</option>
+        </select>
+        <small>Un changement de voix s'applique à la prochaine connexion (après Stop).</small>
+      </label>
+
+      <label>Vitesse de la voix : <b id="speedVal">1.0</b>
+        <input type="range" id="setSpeed" min="0.8" max="1.4" step="0.05">
+      </label>
+
+      <label>Taille du texte : <b id="fontVal">32</b> px
+        <input type="range" id="setFont" min="18" max="64" step="2">
+      </label>
+
+      <label>Réactivité (découpage des segments)
+        <select id="setVad">
+          <option value="fast">Rapide — coupe après 350 ms de silence</option>
+          <option value="normal">Standard — 600 ms</option>
+          <option value="semantic">Sémantique — attend la fin d'idée (plus fluide, plus lent)</option>
+        </select>
+      </label>
+
+      <label>Transcription de la langue source
+        <select id="setTranscribe">
+          <option value="gpt-4o-mini-transcribe">gpt-4o-mini-transcribe (économique)</option>
+          <option value="gpt-4o-transcribe">gpt-4o-transcribe (plus précis)</option>
+          <option value="whisper-1">whisper-1</option>
+          <option value="off">Désactivée (pas de texte source)</option>
+        </select>
+      </label>
+
+      <label class="check"><input type="checkbox" id="setSpeakFr"> Lire à voix haute la traduction française (Écoute / Auto) — utile avec des écouteurs</label>
+      <label class="check"><input type="checkbox" id="setHalfDuplex"> Anti-écho : couper le micro pendant que l'app parle</label>
+
+      <div class="dialog-actions">
+        <button value="cancel" class="small-btn">Fermer</button>
+        <button value="save" id="btnSaveSettings" class="primary">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
