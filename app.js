@@ -20,7 +20,7 @@ const MAX_HISTORY = 500;        // entrées gardées dans l'historique local
 const SILENT_MARK = '·';        // réponse "rien à traduire" (mauvaise langue pour le mode)
 
 const DEFAULTS = {
-  model: 'gpt-realtime-2.1',
+  model: 'gpt-realtime-2',
   customModel: '',
   voice: 'marin',
   speed: 1.0,
@@ -30,6 +30,9 @@ const DEFAULTS = {
   speakFr: false,
   halfDuplex: true,
 };
+
+/** Ordre de repli si le modèle choisi est refusé par OpenAI. */
+const MODEL_FALLBACKS = ['gpt-realtime-2', 'gpt-realtime-2.1', 'gpt-realtime-2.1-mini', 'gpt-realtime-1.5'];
 
 /** Mots-clés transmis au moteur de transcription (gpt-transcribe / gpt-live-transcribe). */
 const TRADE_KEYWORDS = ['Incoterms', 'EXW', 'FCA', 'FOB', 'CFR', 'CIF', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP',
@@ -266,17 +269,33 @@ async function connect(mode) {
   let answerSdp;
   try {
     let ek;
-    try {
-      ek = await createClientSecret(key, session);
-      alive();
-    } catch (err) {
-      if (err.aborted) throw err;
-      // Le modèle n'accepte pas le réglage de raisonnement : on réessaie sans
-      if (err.status === 400 && /reasoning/i.test(err.message) && session.reasoning) {
-        REASONING_REJECTED = true;
-        session = buildSession(mode);
+    const tried = new Set();
+    for (;;) {
+      try {
         ek = await createClientSecret(key, session);
-      } else throw err;
+        alive();
+        break;
+      } catch (err) {
+        if (err.aborted) throw err;
+        tried.add(session.model);
+        // Le modèle n'accepte pas le réglage de raisonnement : on réessaie sans
+        if (err.status === 400 && /reasoning/i.test(err.message) && session.reasoning) {
+          REASONING_REJECTED = true;
+          session = buildSession(mode);
+          continue;
+        }
+        // Modèle refusé (inexistant / non accessible) : repli automatique sur le suivant
+        const next = MODEL_FALLBACKS.find((m) => !tried.has(m));
+        if ([400, 403, 404].includes(err.status) && /model/i.test(err.message) && next) {
+          console.warn('Modèle refusé :', session.model, '→ essai', next);
+          S.settings.model = next;
+          saveSettings();
+          toast(`Modèle « ${session.model} » indisponible : bascule sur « ${next} ».`);
+          session = buildSession(mode);
+          continue;
+        }
+        throw err;
+      }
     }
     answerSdp = await postSdp(offer.sdp, ek);
   } catch (err) {

@@ -38,13 +38,13 @@ Le HTTPS est obligatoire pour le micro : GitHub Pages le fournit d'office.
 
 | Modèle | Ordre de grandeur |
 |---|---|
-| `gpt-realtime-2.1` (par défaut) | ~0,05 à 0,15 $ par minute d'appel traduit |
+| `gpt-realtime-2` (par défaut) | ~0,05 à 0,15 $ par minute d'appel traduit |
 | `gpt-realtime-2.1-mini` | Plusieurs fois moins cher, un peu moins précis sur les termes techniques |
 | Mode Écoute sans voix | Nettement moins cher (sortie en texte seul) |
 
 Base de calcul approximative : l'audio est facturé environ 600 tokens par minute en entrée et environ 1 200 tokens par minute en sortie.
 
-> `gpt-realtime` et `gpt-realtime-mini` (2025) sont **obsolètes** : OpenAI les arrête le 20/01/2027. Les anciens modèles de transcription (`gpt-4o-*-transcribe`, `whisper-1`) s'arrêtent le 26/02/2027. L'app utilise par défaut leurs remplaçants, `gpt-realtime-2.1` et `gpt-live-transcribe`.
+> `gpt-realtime` et `gpt-realtime-mini` (2025) sont **obsolètes** : OpenAI les arrête le 20/01/2027. Les anciens modèles de transcription (`gpt-4o-*-transcribe`, `whisper-1`) s'arrêtent le 26/02/2027. L'app utilise par défaut leurs remplaçants, `gpt-realtime-2` et `gpt-live-transcribe`.
 
 Le compteur de tokens en haut de l'historique (`in · out · min`) suit la consommation de la session. L'app ne garde que les 10 derniers éléments de contexte côté serveur, ce qui empêche le coût par phrase de grimper sur un long appel.
 
@@ -82,7 +82,7 @@ Sur iPhone ou iPad : Safari → Partager → *Sur l'écran d'accueil*. Sur PC : 
 - Si l'app coupe vos phrases trop tôt : Réglages → Réactivité → **Standard** ou **Sémantique**.
 - Si l'app retraduit sa propre voix : éloignez un peu l'appareil, baissez le volume de l'app et vérifiez que l'option **Anti-écho** est cochée.
 - Avec des **écouteurs** sur l'appareil traducteur : cochez « Lire la traduction française » et décochez **Anti-écho** pour ne plus couper le micro.
-- Le modèle par défaut est `gpt-realtime-2.1`, pour la meilleure qualité. Pour les appels courants, `gpt-realtime-2.1-mini` coûte bien moins cher.
+- Le modèle par défaut est `gpt-realtime-2`, pour la meilleure qualité. Si OpenAI refuse le modèle choisi, l'app bascule seule sur le suivant disponible. Pour les appels courants, `gpt-realtime-2.1-mini` coûte bien moins cher.
 
 **Indicateurs**
 - Pastille verte : connecté. Jaune clignotante : connexion en cours. Rouge : erreur (le message s'affiche en bas).
@@ -94,7 +94,7 @@ Sur iPhone ou iPad : Safari → Partager → *Sur l'écran d'accueil*. Sur PC : 
 | Réglage | Effet |
 |---|---|
 | Clé API | Stockée localement, testable (liste les modèles realtime accessibles). |
-| Modèle | `gpt-realtime-2.1` (par défaut), `gpt-realtime-2.1-mini`, `gpt-realtime-2`, `gpt-realtime-1.5`, les modèles obsolètes, ou un nom personnalisé. Appliqué à la prochaine connexion. |
+| Modèle | `gpt-realtime-2` (par défaut), `gpt-realtime-2.1-mini`, `gpt-realtime-2.1`, `gpt-realtime-1.5`, les modèles obsolètes, ou un nom personnalisé. Appliqué à la prochaine connexion. |
 | Voix / vitesse | Voix de la traduction prononcée. Appliquées à la prochaine connexion (Stop puis relancer). Les autres réglages s'appliquent immédiatement. |
 | Taille du texte | 18 à 64 px pour les sous-titres. |
 | Réactivité | Durée de silence qui déclenche la traduction d'un segment : 350 ms, 600 ms ou détection sémantique. |
@@ -114,7 +114,7 @@ icons/          Icônes de l'application
 .nojekyll       Désactive le traitement Jekyll de GitHub Pages
 ```
 
-Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.1.2`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.2.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
 
 ## 7. Dépannage
 
