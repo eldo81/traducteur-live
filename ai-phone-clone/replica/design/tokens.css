@@ -1,0 +1,357 @@
+/*
+ * Lien Interprète (working name) - design tokens, generated from tokens.json.
+ * Import AFTER `@import "tailwindcss";` in the app's globals.css:
+ *   @import "tailwindcss";
+ *   @import "../../replica/design/tailwind-tokens.css";   (adjust relative path)
+ *
+ * - Plain :root vars work with or without Tailwind.
+ * - The @theme block registers the same names with Tailwind v4, so utilities
+ *   exist: bg-bg, bg-surface, text-text, text-muted, bg-primary, text-on-primary,
+ *   bg-caption-me, text-caption, rounded-lg, shadow-card, font-sans, etc.
+ *   Non-inline @theme -> utilities read var(--color-x), so the dark overrides
+ *   below switch every utility automatically; no `dark:` variants needed.
+ * - Theme: follows the OS by default; force with <html data-theme="light|dark">.
+ * - Font: load Inter with next/font (variable: "--font-inter") or self-host it.
+ * - Never use raw hex in components. Values change at /replica-brand; names stay.
+ */
+
+/* (identical to tailwind-tokens.css; kept for the skill's file name)
+   ---------- Tailwind v4 registration (light values = defaults) ---------- */
+@theme {
+  --color-bg: #FFFFFF;
+  --color-surface: #F3F5F4;
+  --color-surface-2: #E8EDEB;
+  --color-border: #D4DCD9;
+  --color-border-input: #738080;
+  --color-text: #0F1715;
+  --color-muted: #4A5652;
+  --color-primary: #0A6660;
+  --color-primary-hover: #084C47;
+  --color-on-primary: #FFFFFF;
+  --color-primary-soft: #E2F1EE;
+  --color-focus: #0A6660;
+  --color-danger: #B42318;
+  --color-on-danger: #FFFFFF;
+  --color-success: #1A7438;
+  --color-on-success: #FFFFFF;
+  --color-warning: #8A5300;
+  --color-warning-soft: #FFF2D1;
+  --color-on-warning-soft: #5E3A00;
+  --color-caption-me: #E2F1EE;
+  --color-caption-me-text: #0F1715;
+  --color-caption-me-accent: #084C47;
+  --color-caption-other: #FBEEDC;
+  --color-caption-other-text: #0F1715;
+  --color-caption-other-accent: #7A4A00;
+  --color-call-stage: #0D1312;
+  --color-on-call-stage: #F1F5F3;
+  --color-on-call-stage-muted: #A8B5B0;
+  --color-call-control: #253230;
+  --color-hangup: #D92D20;
+  --color-on-hangup: #FFFFFF;
+  --shadow-card: 0 1px 2px rgba(13,19,18,.06), 0 1px 3px rgba(13,19,18,.10);
+  --shadow-pop: 0 12px 32px rgba(13,19,18,.18);
+  --shadow-bar: 0 -1px 0 rgba(13,19,18,.08);
+  --font-sans: var(--font-inter, "Inter"), "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-xs--font-weight: 500;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-sm--font-weight: 400;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-base--font-weight: 400;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.625rem;
+  --text-lg--font-weight: 600;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.75rem;
+  --text-xl--font-weight: 700;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.125rem;
+  --text-2xl--font-weight: 700;
+  --text-display: 2.25rem;
+  --text-display--line-height: 2.625rem;
+  --text-display--font-weight: 800;
+  --text-caption-src: 1rem;
+  --text-caption-src--line-height: 1.375rem;
+  --text-caption-src--font-weight: 400;
+  --text-caption: 1.5rem;
+  --text-caption--line-height: 2rem;
+  --text-caption--font-weight: 500;
+  --text-caption-lg: 1.875rem;
+  --text-caption-lg--line-height: 2.375rem;
+  --text-caption-lg--font-weight: 500;
+  --text-caption-xl: 2.375rem;
+  --text-caption-xl--line-height: 2.875rem;
+  --text-caption-xl--font-weight: 600;
+  --text-timer: 1.25rem;
+  --text-timer--line-height: 1.5rem;
+  --text-timer--font-weight: 600;
+  --spacing: 0.25rem;
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.5rem;
+  --space-9: 3rem;
+  --space-10: 4rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-pill: 9999px;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(.2,.8,.2,1);
+  --ease-exit: cubic-bezier(.4,0,1,1);
+  --size-tap: 48px;
+  --size-tap-sm: 40px;
+  --size-call-btn: 64px;
+  --size-hangup-btn: 72px;
+  --size-header-h: 56px;
+  --size-tabbar-h: 64px;
+  --size-content: 640px;
+  --size-content-wide: 1040px;
+  --size-captions: 44rem;
+  --spacing-tap: 48px;  /* utility: h-/w-/size-tap */
+  --spacing-tap-sm: 40px;  /* utility: h-/w-/size-tap-sm */
+  --spacing-call-btn: 64px;  /* utility: h-/w-/size-call-btn */
+  --spacing-hangup-btn: 72px;  /* utility: h-/w-/size-hangup-btn */
+  --spacing-header-h: 56px;  /* utility: h-/w-/size-header-h */
+  --spacing-tabbar-h: 64px;  /* utility: h-/w-/size-tabbar-h */
+  --container-content: 640px;  /* utility: max-w-content */
+  --container-content-wide: 1040px;  /* utility: max-w-content-wide */
+  --container-captions: 44rem;  /* utility: max-w-captions */
+  --ring-width: 2px;
+  --ring-offset: 2px;
+}
+
+/* ---------- Light (default) ---------- */
+:root,
+[data-theme="light"] {
+  --color-bg: #FFFFFF;
+  --color-surface: #F3F5F4;
+  --color-surface-2: #E8EDEB;
+  --color-border: #D4DCD9;
+  --color-border-input: #738080;
+  --color-text: #0F1715;
+  --color-muted: #4A5652;
+  --color-primary: #0A6660;
+  --color-primary-hover: #084C47;
+  --color-on-primary: #FFFFFF;
+  --color-primary-soft: #E2F1EE;
+  --color-focus: #0A6660;
+  --color-danger: #B42318;
+  --color-on-danger: #FFFFFF;
+  --color-success: #1A7438;
+  --color-on-success: #FFFFFF;
+  --color-warning: #8A5300;
+  --color-warning-soft: #FFF2D1;
+  --color-on-warning-soft: #5E3A00;
+  --color-caption-me: #E2F1EE;
+  --color-caption-me-text: #0F1715;
+  --color-caption-me-accent: #084C47;
+  --color-caption-other: #FBEEDC;
+  --color-caption-other-text: #0F1715;
+  --color-caption-other-accent: #7A4A00;
+  --color-call-stage: #0D1312;
+  --color-on-call-stage: #F1F5F3;
+  --color-on-call-stage-muted: #A8B5B0;
+  --color-call-control: #253230;
+  --color-hangup: #D92D20;
+  --color-on-hangup: #FFFFFF;
+  --shadow-card: 0 1px 2px rgba(13,19,18,.06), 0 1px 3px rgba(13,19,18,.10);
+  --shadow-pop: 0 12px 32px rgba(13,19,18,.18);
+  --shadow-bar: 0 -1px 0 rgba(13,19,18,.08);
+  color-scheme: light;
+  --font-sans: var(--font-inter, "Inter"), "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-xs--font-weight: 500;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-sm--font-weight: 400;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-base--font-weight: 400;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.625rem;
+  --text-lg--font-weight: 600;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.75rem;
+  --text-xl--font-weight: 700;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.125rem;
+  --text-2xl--font-weight: 700;
+  --text-display: 2.25rem;
+  --text-display--line-height: 2.625rem;
+  --text-display--font-weight: 800;
+  --text-caption-src: 1rem;
+  --text-caption-src--line-height: 1.375rem;
+  --text-caption-src--font-weight: 400;
+  --text-caption: 1.5rem;
+  --text-caption--line-height: 2rem;
+  --text-caption--font-weight: 500;
+  --text-caption-lg: 1.875rem;
+  --text-caption-lg--line-height: 2.375rem;
+  --text-caption-lg--font-weight: 500;
+  --text-caption-xl: 2.375rem;
+  --text-caption-xl--line-height: 2.875rem;
+  --text-caption-xl--font-weight: 600;
+  --text-timer: 1.25rem;
+  --text-timer--line-height: 1.5rem;
+  --text-timer--font-weight: 600;
+  --spacing: 0.25rem;
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.5rem;
+  --space-9: 3rem;
+  --space-10: 4rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-pill: 9999px;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(.2,.8,.2,1);
+  --ease-exit: cubic-bezier(.4,0,1,1);
+  --size-tap: 48px;
+  --size-tap-sm: 40px;
+  --size-call-btn: 64px;
+  --size-hangup-btn: 72px;
+  --size-header-h: 56px;
+  --size-tabbar-h: 64px;
+  --size-content: 640px;
+  --size-content-wide: 1040px;
+  --size-captions: 44rem;
+  --spacing-tap: 48px;  /* utility: h-/w-/size-tap */
+  --spacing-tap-sm: 40px;  /* utility: h-/w-/size-tap-sm */
+  --spacing-call-btn: 64px;  /* utility: h-/w-/size-call-btn */
+  --spacing-hangup-btn: 72px;  /* utility: h-/w-/size-hangup-btn */
+  --spacing-header-h: 56px;  /* utility: h-/w-/size-header-h */
+  --spacing-tabbar-h: 64px;  /* utility: h-/w-/size-tabbar-h */
+  --container-content: 640px;  /* utility: max-w-content */
+  --container-content-wide: 1040px;  /* utility: max-w-content-wide */
+  --container-captions: 44rem;  /* utility: max-w-captions */
+  --ring-width: 2px;
+  --ring-offset: 2px;
+}
+
+/* ---------- Dark: OS preference unless the user forced light ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #0D1312;
+    --color-surface: #151D1B;
+    --color-surface-2: #1E2825;
+    --color-border: #2B3734;
+    --color-border-input: #7B8A85;
+    --color-text: #F1F5F3;
+    --color-muted: #A8B5B0;
+    --color-primary: #3CC2B5;
+    --color-primary-hover: #5FD3C7;
+    --color-on-primary: #03201D;
+    --color-primary-soft: #0F302C;
+    --color-focus: #3CC2B5;
+    --color-danger: #F97A6E;
+    --color-on-danger: #2A0703;
+    --color-success: #5FD38A;
+    --color-on-success: #03200F;
+    --color-warning: #F4B740;
+    --color-warning-soft: #2E2410;
+    --color-on-warning-soft: #F4B740;
+    --color-caption-me: #0F302C;
+    --color-caption-me-text: #F1F5F3;
+    --color-caption-me-accent: #7FE0D4;
+    --color-caption-other: #33270F;
+    --color-caption-other-text: #F1F5F3;
+    --color-caption-other-accent: #F6C66A;
+    --color-call-stage: #05090A;
+    --color-on-call-stage: #F1F5F3;
+    --color-on-call-stage-muted: #A8B5B0;
+    --color-call-control: #1E2825;
+    --color-hangup: #D92D20;
+    --color-on-hangup: #FFFFFF;
+    --shadow-card: 0 1px 2px rgba(0,0,0,.5);
+    --shadow-pop: 0 12px 32px rgba(0,0,0,.6);
+    --shadow-bar: 0 -1px 0 rgba(255,255,255,.06);
+    color-scheme: dark;
+  }
+}
+
+/* ---------- Dark: forced ---------- */
+[data-theme="dark"] {
+  --color-bg: #0D1312;
+  --color-surface: #151D1B;
+  --color-surface-2: #1E2825;
+  --color-border: #2B3734;
+  --color-border-input: #7B8A85;
+  --color-text: #F1F5F3;
+  --color-muted: #A8B5B0;
+  --color-primary: #3CC2B5;
+  --color-primary-hover: #5FD3C7;
+  --color-on-primary: #03201D;
+  --color-primary-soft: #0F302C;
+  --color-focus: #3CC2B5;
+  --color-danger: #F97A6E;
+  --color-on-danger: #2A0703;
+  --color-success: #5FD38A;
+  --color-on-success: #03200F;
+  --color-warning: #F4B740;
+  --color-warning-soft: #2E2410;
+  --color-on-warning-soft: #F4B740;
+  --color-caption-me: #0F302C;
+  --color-caption-me-text: #F1F5F3;
+  --color-caption-me-accent: #7FE0D4;
+  --color-caption-other: #33270F;
+  --color-caption-other-text: #F1F5F3;
+  --color-caption-other-accent: #F6C66A;
+  --color-call-stage: #05090A;
+  --color-on-call-stage: #F1F5F3;
+  --color-on-call-stage-muted: #A8B5B0;
+  --color-call-control: #1E2825;
+  --color-hangup: #D92D20;
+  --color-on-hangup: #FFFFFF;
+  --shadow-card: 0 1px 2px rgba(0,0,0,.5);
+  --shadow-pop: 0 12px 32px rgba(0,0,0,.6);
+  --shadow-bar: 0 -1px 0 rgba(255,255,255,.06);
+  color-scheme: dark;
+}
+
+/* ---------- Base ---------- */
+html {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11", "ss01";  /* Inter: single-storey a, open digits */
+}
+body { background: var(--color-bg); color: var(--color-text); }
+:focus-visible {
+  outline: var(--ring-width) solid var(--color-focus);
+  outline-offset: var(--ring-offset);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

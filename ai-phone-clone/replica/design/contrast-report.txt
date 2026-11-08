@@ -1,0 +1,72 @@
+  AAA   18.20:1  light-text               on light-bg             
+  AAA   16.62:1  light-text               on light-surface        
+  AAA   15.38:1  light-text               on light-surface-2      
+  AAA    7.65:1  light-muted              on light-bg             
+  AA     6.99:1  light-muted              on light-surface        
+  AA     6.47:1  light-muted              on light-surface-2      
+  AA     6.81:1  light-on-primary         on light-primary        
+  AAA    9.84:1  light-on-primary         on light-primary-hover  
+  AA     6.81:1  light-primary            on light-bg             
+  AA     6.22:1  light-primary            on light-surface        
+  AA     5.86:1  light-primary            on light-primary-soft   
+  AA     6.57:1  light-on-danger          on light-danger         
+  AA     6.57:1  light-danger             on light-bg             
+  AA     6.00:1  light-danger             on light-surface        
+  AA     5.83:1  light-on-success         on light-success        
+  AA     5.83:1  light-success            on light-bg             
+  AA     6.33:1  light-warning            on light-bg             
+  AAA    9.07:1  light-on-warning-soft    on light-warning-soft   
+  AAA   15.65:1  light-caption-me-text    on light-caption-me     
+  AA     6.58:1  light-muted              on light-caption-me     
+  AAA    8.45:1  light-caption-me-accent  on light-caption-me     
+  AAA   15.92:1  light-caption-other-text on light-caption-other  
+  AA     6.69:1  light-muted              on light-caption-other  
+  AA     6.54:1  light-caption-other-accent on light-caption-other  
+  AAA   17.06:1  light-on-call-stage      on light-call-stage     
+  AAA    8.85:1  light-on-call-stage-muted on light-call-stage     
+  PASS   4.09:1  light-border-input       on light-bg             ui
+  PASS   3.74:1  light-border-input       on light-surface        ui
+  PASS   6.81:1  light-focus              on light-bg             ui
+  PASS   6.22:1  light-focus              on light-surface        ui
+  AAA   12.10:1  light-on-call-stage      on light-call-control   
+  AA     4.83:1  light-on-hangup          on light-hangup         
+  PASS   3.88:1  light-hangup             on light-call-stage     ui
+  AAA   17.06:1  light-call-stage         on light-on-call-stage  
+  PASS  17.06:1  light-on-call-stage      on light-call-stage     ui
+  AAA   17.06:1  dark-text                on dark-bg              
+  AAA   15.61:1  dark-text                on dark-surface         
+  AAA   13.78:1  dark-text                on dark-surface-2       
+  AAA    8.85:1  dark-muted               on dark-bg              
+  AAA    8.09:1  dark-muted               on dark-surface         
+  AAA    7.15:1  dark-muted               on dark-surface-2       
+  AAA    7.80:1  dark-on-primary          on dark-primary         
+  AAA    9.47:1  dark-on-primary          on dark-primary-hover   
+  AAA    8.56:1  dark-primary             on dark-bg              
+  AAA    7.83:1  dark-primary             on dark-surface         
+  AA     6.47:1  dark-primary             on dark-primary-soft    
+  AAA    7.11:1  dark-on-danger           on dark-danger          
+  AAA    7.18:1  dark-danger              on dark-bg              
+  AA     6.57:1  dark-danger              on dark-surface         
+  AAA    9.18:1  dark-on-success          on dark-success         
+  AAA    9.98:1  dark-success             on dark-bg              
+  AAA   10.45:1  dark-warning             on dark-bg              
+  AAA    8.50:1  dark-on-warning-soft     on dark-warning-soft    
+  AAA   12.91:1  dark-caption-me-text     on dark-caption-me      
+  AA     6.69:1  dark-muted               on dark-caption-me      
+  AAA    9.14:1  dark-caption-me-accent   on dark-caption-me      
+  AAA   13.28:1  dark-caption-other-text  on dark-caption-other   
+  AA     6.89:1  dark-muted               on dark-caption-other   
+  AAA    9.18:1  dark-caption-other-accent on dark-caption-other   
+  AAA   18.19:1  dark-on-call-stage       on dark-call-stage      
+  AAA    9.43:1  dark-on-call-stage-muted on dark-call-stage      
+  PASS   5.20:1  dark-border-input        on dark-bg              ui
+  PASS   4.75:1  dark-border-input        on dark-surface         ui
+  PASS   8.56:1  dark-focus               on dark-bg              ui
+  PASS   7.83:1  dark-focus               on dark-surface         ui
+  AAA   13.78:1  dark-on-call-stage       on dark-call-control    
+  AA     4.83:1  dark-on-hangup           on dark-hangup          
+  PASS   4.14:1  dark-hangup              on dark-call-stage      ui
+  AAA   18.19:1  dark-call-stage          on dark-on-call-stage   
+  PASS  18.19:1  dark-on-call-stage       on dark-call-stage      ui
+
+  70 pairs, 0 failing AA
