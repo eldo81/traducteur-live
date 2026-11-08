@@ -85,7 +85,7 @@ const S = {
   audioCtx: null, analyser: null, meterRaf: 0,
   wakeLock: null,
   connecting: false,
-  lastCommittedItem: null,
+  pendingItems: [],       // segments audio validés en attente de leur réponse (file FIFO)
   entries: new Map(),     // item_id (entrée audio) → entrée d'historique
   respToEntry: new Map(), // response_id → item_id
   respMuted: new Map(),   // response_id → audio coupé localement (mode Auto, FR non lu)
@@ -432,7 +432,7 @@ function stopAll(isError) {
   el.audio.muted = false;
   S.aiSpeaking = false;
   S.entries.clear(); S.respToEntry.clear(); S.respMuted.clear();
-  S.serverItems = []; S.lastCommittedItem = null; S.dropped.clear(); S.currentRespId = null; S.playingResp = null;
+  S.serverItems = []; S.pendingItems = []; S.dropped.clear(); S.currentRespId = null; S.playingResp = null;
   releaseWakeLock();
   renderModeButtons();
   el.stop.disabled = true;
@@ -463,7 +463,7 @@ function onEvent(ev) {
       break;
 
     case 'input_audio_buffer.committed':
-      S.lastCommittedItem = ev.item_id;
+      S.pendingItems.push(ev.item_id);
       ensureEntry(ev.item_id);
       break;
 
@@ -495,8 +495,7 @@ function onEvent(ev) {
     case 'response.created': {
       const rid = ev.response && ev.response.id;
       S.currentRespId = rid;
-      const itemId = S.lastCommittedItem || ('r_' + rid);
-      S.lastCommittedItem = null;
+      const itemId = S.pendingItems.shift() || ('r_' + rid);
       S.respToEntry.set(rid, itemId);
       const e = ensureEntry(itemId);
       e.dst = '';
