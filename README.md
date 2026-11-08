@@ -89,6 +89,17 @@ Sur iPhone ou iPad : Safari → Partager → *Sur l'écran d'accueil*. Sur PC : 
 - Icône micro : jauge verte = niveau capté, rouge = micro coupé (l'app parle).
 - L'écran reste allumé tant qu'un mode est actif (Wake Lock).
 
+## 4 bis. Mode Écouteurs + PC (discret, pour les appels d'affaires)
+
+L'appel (WhatsApp Desktop, Zoom, Teams, Meet) et le traducteur tournent sur le **même PC**, dans Chrome ou Edge. Deux câbles audio virtuels gratuits relient les deux. Le résultat :
+- vous entendez la traduction française dans vos écouteurs Bluetooth, avec si vous voulez la voix originale en fond ;
+- votre interlocuteur n'entend **que l'anglais**, jamais votre français ;
+- les deux sens fonctionnent en même temps, sans haut-parleur ni écho.
+
+Activation : Réglages → **Sortie audio → Écouteurs + PC** → *Détecter les périphériques audio* → choisissez les 4 périphériques → Enregistrer. Guide complet d'installation des câbles (VB-CABLE sous Windows, BlackHole sur Mac) : [casque.html](casque.html), accessible aussi depuis les Réglages.
+
+Ce mode ne fonctionne pas sur téléphone : Chrome sur Android ne permet pas de choisir la sortie audio.
+
 ## 5. Réglages disponibles
 
 | Réglage | Effet |
@@ -110,13 +121,15 @@ Sur iPhone ou iPad : Safari → Partager → *Sur l'écran d'accueil*. Sur PC : 
 index.html      Interface (3 modes, Stop, historique, réglages)
 style.css       Thème sombre, mobile d'abord
 app.js          Moteur : WebRTC Realtime, modes, anti-écho, historique, export, Wake Lock
+headset.js      Mode Écouteurs + PC : deux canaux simultanés, choix des entrées/sorties audio
+casque.html     Guide d'installation des câbles audio virtuels
 sw.js           Service worker (cache de l'interface ; l'API n'est jamais mise en cache)
 manifest.json   Manifeste PWA (installable)
 icons/          Icônes de l'application
 .nojekyll       Désactive le traitement Jekyll de GitHub Pages
 ```
 
-Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.4.1`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.5.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
 
 ## 7. Dépannage
 

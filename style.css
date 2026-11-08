@@ -200,3 +200,8 @@ dialog label.check { min-height: 44px; align-items: center; }
 /* Réglages : Fermer / Enregistrer toujours visibles */
 .dialog-actions { position: sticky; bottom: 0; background: var(--panel); padding-block: 8px; margin-bottom: -16px; padding-bottom: 16px; }
 .small-btn { white-space: nowrap; }
+
+/* Mode Écouteurs : bloc de réglages */
+.hs-block { display: flex; flex-direction: column; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.hs-block[hidden] { display: none; }
+.hs-guide { color: var(--accent); font-size: 14px; }

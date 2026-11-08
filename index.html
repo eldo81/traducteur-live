@@ -87,6 +87,35 @@
         <span id="keyResult" class="muted"></span>
       </div>
 
+      <label>Sortie audio
+        <select id="setOutput">
+          <option value="speaker">Haut-parleur — appareil posé à côté du téléphone d'appel</option>
+          <option value="headset">Écouteurs + PC — discret, l'interlocuteur n'entend que l'anglais</option>
+        </select>
+      </label>
+      <div id="headsetBlock" class="hs-block" hidden>
+        <small id="hsSupport"></small>
+        <button type="button" id="btnDetectDevices" class="small-btn">Détecter les périphériques audio</button>
+        <label>Son de l'appel (entrée)
+          <select id="setHsCallIn"></select>
+          <small>Windows : « CABLE Output » · Mac : « BlackHole 2ch »</small>
+        </label>
+        <label>Mon micro
+          <select id="setHsMicIn"></select>
+          <small>Micro du PC ou micro USB conseillé (le micro Bluetooth dégrade le son des écouteurs).</small>
+        </label>
+        <label>Mes écouteurs (traduction française)
+          <select id="setHsEarOut"></select>
+        </label>
+        <label>Vers l'appel (traduction anglaise)
+          <select id="setHsCallOut"></select>
+          <small>Windows : « CABLE-A Input » · Mac : « BlackHole 16ch »</small>
+        </label>
+        <label class="check"><input type="checkbox" id="setHsHearFr"> Lire la traduction française dans mes écouteurs (sinon sous-titres seuls)</label>
+        <label class="check"><input type="checkbox" id="setHsMonitor"> Entendre la voix originale de l'interlocuteur en fond (20 %)</label>
+        <a href="casque.html" target="_blank" rel="noopener" class="hs-guide">Guide d'installation des câbles audio (10 min) ↗</a>
+      </div>
+
       <label>Modèle
         <select id="setModel">
           <option value="gpt-realtime-2">gpt-realtime-2 (qualité, recommandé)</option>
@@ -164,6 +193,7 @@
 
   <div id="toast" class="toast" role="status"></div>
 
+  <script src="headset.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

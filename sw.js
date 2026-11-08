@@ -1,12 +1,14 @@
 /* Service worker — met en cache l'interface (fonctionne hors ligne pour l'ouverture).
  * Les appels à api.openai.com ne sont JAMAIS mis en cache.
  * Incrémenter VERSION à chaque déploiement pour forcer la mise à jour. */
-const VERSION = 'tl-v1.4.1';
+const VERSION = 'tl-v1.5.0';
 const SHELL = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './headset.js',
+  './casque.html',
   './manifest.json',
   './icons/icon.svg',
   './icons/icon-192.png',

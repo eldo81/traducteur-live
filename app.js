@@ -32,6 +32,11 @@ const DEFAULTS = {
   speakFr: false,
   halfDuplex: true,
   settingsVersion: 2,
+  // Mode Écouteurs + PC
+  output: 'speaker',       // 'speaker' (haut-parleur) | 'headset' (écouteurs + câbles virtuels)
+  hsCallIn: '', hsMicIn: '', hsEarOut: '', hsCallOut: '',
+  hsHearFr: true,          // lire la traduction FR dans les écouteurs
+  hsMonitor: true,         // voix originale de l'interlocuteur en fond
 };
 
 /** Consignes d'accent ajoutées aux instructions (ne changent que la prononciation). */
@@ -405,6 +410,8 @@ function send(obj) {
 async function startMode(mode) {
   if (S.connecting) return;
   if (S.mode === mode) return;
+  // Mode Écouteurs + PC : deux canaux indépendants gérés par headset.js
+  if (S.settings.output === 'headset') return Headset.start(mode);
   const wasConnected = !!S.pc;
   S.mode = mode;
   renderModeButtons();
@@ -445,6 +452,7 @@ function reconnect() {
 
 function stopAll(isError) {
   S.gen++;
+  if (typeof Headset !== 'undefined') Headset.stop();
   clearTimeout(S.segTimer);
   S.mode = null;
   S.connecting = false;
@@ -930,9 +938,17 @@ function openSettings() {
   $('setSpeakFr').checked = s.speakFr;
   $('setAccent').value = s.accent;
   $('setHalfDuplex').checked = s.halfDuplex;
+  $('setOutput').value = s.output;
+  $('setHsHearFr').checked = s.hsHearFr;
+  $('setHsMonitor').checked = s.hsMonitor;
+  toggleHeadsetBlock();
+  if (s.output === 'headset') Headset.populate(false);
   $('keyResult').textContent = '';
   toggleCustomModel();
   if (!el.dialog.open) el.dialog.showModal();
+}
+function toggleHeadsetBlock() {
+  $('headsetBlock').hidden = $('setOutput').value !== 'headset';
 }
 function toggleCustomModel() {
   $('customModelWrap').style.display = $('setModel').value === 'custom' ? '' : 'none';
@@ -951,10 +967,28 @@ function readSettingsForm() {
     speakFr: $('setSpeakFr').checked,
     accent: $('setAccent').value,
     halfDuplex: $('setHalfDuplex').checked,
+    output: $('setOutput').value,
+    hsCallIn: $('setHsCallIn').value || S.settings.hsCallIn,
+    hsMicIn: $('setHsMicIn').value || S.settings.hsMicIn,
+    hsEarOut: $('setHsEarOut').value || S.settings.hsEarOut,
+    hsCallOut: $('setHsCallOut').value || S.settings.hsCallOut,
+    hsHearFr: $('setHsHearFr').checked,
+    hsMonitor: $('setHsMonitor').checked,
   });
   saveSettings();
   applyFontSize();
   // Si connecté : on applique à chaud ce qui peut l'être
+  // Mode Écouteurs actif, ou changement de sortie audio : on relance proprement
+  const hsChanged = ['output', 'hsCallIn', 'hsMicIn', 'hsEarOut', 'hsCallOut', 'hsHearFr', 'hsMonitor', 'voice', 'accent', 'model', 'speed']
+    .some((k) => prev[k] !== S.settings[k]);
+  if (S.mode && (Headset.isActive() || prev.output !== S.settings.output) && hsChanged) {
+    const m = S.mode;
+    stopAll();
+    const g = S.gen;
+    setTimeout(() => { if (g === S.gen && !S.mode) startMode(m); }, 300);
+    toast('Réglages audio modifiés : reconnexion…');
+    return;
+  }
   if (S.pc && S.mode) {
     send({ type: 'session.update', session: sessionPatch(S.mode) });
     if (prev.voice !== S.settings.voice || prev.model !== S.settings.model || prev.customModel !== S.settings.customModel || prev.speed !== S.settings.speed) {
@@ -1016,6 +1050,8 @@ function init() {
 
   $('btnSettings').addEventListener('click', openSettings);
   $('setModel').addEventListener('change', toggleCustomModel);
+  $('setOutput').addEventListener('change', () => { toggleHeadsetBlock(); if ($('setOutput').value === 'headset') Headset.populate(false); });
+  $('btnDetectDevices').addEventListener('click', () => Headset.populate(true));
   $('setSpeed').addEventListener('input', (e) => { $('speedVal').textContent = Number(e.target.value).toFixed(2); });
   $('setFont').addEventListener('input', (e) => {
     $('fontVal').textContent = e.target.value;

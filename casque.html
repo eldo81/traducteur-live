@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Mode Écouteurs — installation</title>
+<style>
+  :root {
+    --bg: #0b0f14; --panel: #131a22; --panel-2: #1a2330; --line: #243041;
+    --text: #e9eef5; --muted: #8a97a8; --accent: #3fa7ff;
+    --listen: #2bb673; --speak: #ff8a3d; --danger: #ff4d5e;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 16px 16px 48px; }
+  a { color: var(--accent); }
+  .back { display: inline-block; margin-bottom: 12px; text-decoration: none; font-weight: 600; }
+  h1 { font-size: 1.6rem; line-height: 1.2; margin: 4px 0 6px; }
+  h2 { font-size: 1.2rem; margin: 0 0 10px; display: flex; gap: 10px; align-items: center; }
+  h2 .n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+          color: var(--bg); font-size: .9rem; display: grid; place-items: center; }
+  h3 { font-size: 1rem; margin: 16px 0 6px; color: var(--accent); }
+  .lead, .muted { color: var(--muted); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+            padding: 16px; margin: 16px 0; }
+  ol, ul { padding-left: 1.3em; margin: 6px 0; }
+  li { margin: 4px 0; }
+  code, kbd, .dev { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; }
+  .dev { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
+  pre { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+        overflow-x: auto; margin: 8px 0; }
+  .note { border-left: 3px solid var(--speak); background: var(--panel-2); padding: 8px 12px;
+          border-radius: 0 8px 8px 0; margin: 10px 0; }
+  .ok { border-left-color: var(--listen); }
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  /* Schéma de routage */
+  .flow { display: grid; gap: 10px; }
+  .lane { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  .lane h4 { margin: 0 0 8px; font-size: .95rem; }
+  .lane.in h4 { color: var(--listen); } .lane.out h4 { color: var(--speak); }
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .box { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: .88rem; }
+  .lane.in .box.cable { border-color: var(--listen); } .lane.out .box.cable { border-color: var(--speak); }
+  .arrow { color: var(--muted); }
+  .tag { font-weight: 700; padding: 0 6px; border-radius: 6px; }
+  .t-auto { background: #a77bff33; color: #c9b0ff; } .t-ecoute { background: #2bb67333; color: var(--listen); }
+  .t-parle { background: #ff8a3d33; color: var(--speak); }
+  footer { text-align: center; margin-top: 24px; }
+  @media (min-width: 640px) { main { padding-top: 28px; } h1 { font-size: 2rem; } }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← Retour à l'app</a>
+  <h1>Mode Écouteurs + PC</h1>
+  <p class="lead">Votre appel (WhatsApp, Zoom, Teams, Google Meet) et Traducteur Live tournent sur le même PC. Deux câbles audio virtuels relient les deux : vous entendez le français dans vos écouteurs, votre interlocuteur n'entend que l'anglais. Aucun haut-parleur, aucun écho.</p>
+
+  <section aria-labelledby="schema">
+    <h2 id="schema">Le principe en un coup d'œil</h2>
+    <div class="flow">
+      <div class="lane in">
+        <h4>Câble 1 — l'appel vers le traducteur (il parle anglais)</h4>
+        <div class="chain">
+          <span class="box">Interlocuteur</span><span class="arrow">→</span>
+          <span class="box">App d'appel<br><small class="muted">Haut-parleur</small></span><span class="arrow">→</span>
+          <span class="box cable">CABLE Input → CABLE Output<br><small class="muted">Mac : BlackHole 2ch</small></span><span class="arrow">→</span>
+          <span class="box">Traducteur Live</span><span class="arrow">→</span>
+          <span class="box">🎧 Vos écouteurs (français)</span>
+        </div>
+      </div>
+      <div class="lane out">
+        <h4>Câble 2 — le traducteur vers l'appel (vous parlez français)</h4>
+        <div class="chain">
+          <span class="box">🎤 Votre micro</span><span class="arrow">→</span>
+          <span class="box">Traducteur Live</span><span class="arrow">→</span>
+          <span class="box cable">CABLE-A Input → CABLE-A Output<br><small class="muted">Mac : BlackHole 16ch</small></span><span class="arrow">→</span>
+          <span class="box">App d'appel<br><small class="muted">Microphone</small></span><span class="arrow">→</span>
+          <span class="box">Interlocuteur (anglais)</span>
+        </div>
+      </div>
+    </div>
+    <p class="muted">Les deux sens fonctionnent en même temps (deux sessions indépendantes). Coût : environ celui de deux sessions de traduction simultanées.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">1</span>Ce qu'il vous faut</h2>
+    <ul>
+      <li>Un PC sous <strong>Windows 10/11</strong> ou un Mac sous <strong>macOS</strong>.</li>
+      <li><strong>Chrome</strong> ou <strong>Edge</strong> à jour, ouvert sur <a href="https://eldo81.github.io/traducteur-live/">eldo81.github.io/traducteur-live/</a>.</li>
+      <li>Des <strong>écouteurs</strong> (Bluetooth ou filaires) connectés au PC.</li>
+      <li>Un <strong>micro</strong> : celui du PC ou un micro USB (recommandé). Le micro des écouteurs Bluetooth fonctionne, mais fait passer les écouteurs en qualité « casque/HFP », plus faible.</li>
+      <li>Les <strong>deux câbles virtuels</strong> : VB-CABLE et VB-CABLE A+B (Windows) ou BlackHole 2ch et 16ch (Mac).</li>
+      <li>La <strong>version ordinateur</strong> de votre application d'appel (WhatsApp Desktop, Zoom, Teams) ou Google Meet dans Chrome/Edge.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>Installer les câbles</h2>
+    <h3>Windows</h3>
+    <ol>
+      <li>Ouvrez <a href="https://vb-audio.com/Cable/">vb-audio.com/Cable/</a> et téléchargez <strong>VB-CABLE</strong> (gratuit, fichier .zip).</li>
+      <li>Extrayez le zip (clic droit → <em>Extraire tout</em>).</li>
+      <li>Clic droit sur <code>VBCABLE_Setup_x64.exe</code> → <strong>Exécuter en tant qu'administrateur</strong> → <strong>Install Driver</strong>.</li>
+      <li>Redémarrez le PC.</li>
+      <li>Sur la même page, téléchargez <strong>VB-CABLE A &amp; B</strong> (donationware) et répétez les étapes 2 à 4.</li>
+      <li>Vérifiez dans <em>Paramètres → Système → Son</em> que <span class="dev">CABLE Input</span> et <span class="dev">CABLE-A Input</span> apparaissent.</li>
+    </ol>
+    <h3>Mac</h3>
+    <ol>
+      <li>Ouvrez <a href="https://existential.audio/blackhole/">existential.audio/blackhole</a> (gratuit, saisissez votre e-mail pour recevoir les liens).</li>
+      <li>Installez <strong>BlackHole 2ch</strong>, puis <strong>BlackHole 16ch</strong>.</li>
+      <li>Ou, avec Homebrew, dans le Terminal :</li>
+    </ol>
+    <pre><code>brew install blackhole-2ch blackhole-16ch</code></pre>
+    <p class="note"><strong>Important :</strong> ne définissez jamais un câble comme périphérique par défaut du système. Sous Windows comme sur Mac, la sortie par défaut reste vos écouteurs ou vos haut-parleurs, l'entrée par défaut reste votre vrai micro. Seules l'app d'appel et Traducteur Live utilisent les câbles.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>Régler l'app Traducteur Live</h2>
+    <ol>
+      <li>Ouvrez <strong>Réglages → Sortie audio</strong> et choisissez <strong>« Écouteurs + PC »</strong>.</li>
+      <li>Cliquez sur <strong>« Détecter les périphériques audio »</strong>, puis autorisez l'accès au micro.</li>
+      <li>Choisissez les quatre périphériques :
+        <div class="tablewrap"><table>
+          <tr><th>Réglage</th><th>Windows</th><th>Mac</th></tr>
+          <tr><td>Mon micro</td><td colspan="2">Votre vrai micro (PC ou USB)</td></tr>
+          <tr><td>Mes écouteurs (traduction française)</td><td colspan="2">Vos écouteurs Bluetooth</td></tr>
+          <tr><td>Son de l'appel (entrée)</td><td><span class="dev">CABLE Output</span></td><td><span class="dev">BlackHole 2ch</span></td></tr>
+          <tr><td>Vers l'appel (traduction anglaise)</td><td><span class="dev">CABLE-A Input</span></td><td><span class="dev">BlackHole 16ch</span></td></tr>
+        </table></div>
+      </li>
+      <li>Cochez <strong>« Lire la traduction française dans mes écouteurs »</strong>.</li>
+      <li>Option : <strong>« Entendre la voix originale en fond »</strong> pour garder la voix de l'interlocuteur à faible volume.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>Régler l'application d'appel</h2>
+    <p>Partout, les deux mêmes valeurs :</p>
+    <div class="tablewrap"><table>
+      <tr><th>Dans l'app d'appel</th><th>Windows</th><th>Mac</th></tr>
+      <tr><td>Microphone</td><td><span class="dev">CABLE-A Output</span></td><td><span class="dev">BlackHole 16ch</span></td></tr>
+      <tr><td>Haut-parleur</td><td><span class="dev">CABLE Input</span></td><td><span class="dev">BlackHole 2ch</span></td></tr>
+    </table></div>
+    <h3>WhatsApp Desktop</h3>
+    <p>Pendant l'appel : bouton <strong>« … »</strong> → choisissez <em>Microphone</em> et <em>Haut-parleur</em>. Ou avant l'appel : <strong>Paramètres → Audio/Vidéo</strong>.</p>
+    <h3>Zoom</h3>
+    <p><strong>Paramètres → Audio</strong> → <em>Haut-parleur</em> et <em>Microphone</em>. Décochez « Régler automatiquement le volume du micro ».</p>
+    <h3>Microsoft Teams</h3>
+    <p><strong>Paramètres → Appareils</strong> → <em>Haut-parleur</em> et <em>Microphone</em>.</p>
+    <h3>Google Meet</h3>
+    <p>Pendant la réunion : <strong>⋮ → Paramètres → Audio</strong> → <em>Micro</em> et <em>Haut-parleurs</em>.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>Pendant l'appel</h2>
+    <ul>
+      <li><span class="tag t-auto">Auto</span> traduit dans les deux sens en même temps (usage normal).</li>
+      <li><span class="tag t-ecoute">Écoute</span> traduit seulement l'interlocuteur (vous ne parlez pas).</li>
+      <li><span class="tag t-parle">Parle</span> traduit seulement votre voix.</li>
+      <li>Parlez en phrases courtes, marquez une petite pause : la traduction démarre plus vite.</li>
+      <li>Votre interlocuteur entend la traduction avec un court décalage ; prévenez-le en début d'appel.</li>
+      <li>En fin d'appel, appuyez sur <strong>Stop</strong>, puis <strong>Exporter .txt</strong> pour garder la transcription.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">6</span>Test en 1 minute avant un appel important</h2>
+    <ol>
+      <li>Lancez l'app en mode <strong>Auto</strong>.</li>
+      <li><strong>Sens anglais → français :</strong> lancez une vidéo YouTube en anglais dans un autre navigateur ou onglet, et envoyez sa sortie vers <span class="dev">CABLE Input</span> :
+        <ul>
+          <li>Windows : <em>Paramètres → Son → Volume des applications et préférences de périphérique</em> → ligne du navigateur → Sortie = <span class="dev">CABLE Input</span>.</li>
+          <li>Mac : réglez temporairement la sortie de la vidéo sur <span class="dev">BlackHole 2ch</span> (menu son de l'app de lecture, ou <em>Réglages Système → Son</em>, puis remettez vos écouteurs juste après).</li>
+        </ul>
+        Le français doit s'afficher et s'entendre dans vos écouteurs.</li>
+      <li><strong>Sens français → anglais :</strong> ouvrez l'Enregistreur vocal (Windows) ou QuickTime → <em>Nouvel enregistrement audio</em> (Mac), choisissez comme source <span class="dev">CABLE-A Output</span> / <span class="dev">BlackHole 16ch</span>, enregistrez en parlant français, puis réécoutez : vous devez entendre uniquement l'anglais.</li>
+      <li>Remettez la sortie de la vidéo sur vos écouteurs (Windows : « Par défaut »).</li>
+    </ol>
+    <p class="note ok">Les deux tests passent : vous êtes prêt pour l'appel.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">7</span>Dépannage</h2>
+    <div class="tablewrap"><table>
+      <tr><th>Symptôme</th><th>Solution</th></tr>
+      <tr><td>L'interlocuteur n'est pas traduit</td><td>Haut-parleur de l'app d'appel = <span class="dev">CABLE Input</span> / <span class="dev">BlackHole 2ch</span>. Dans l'app, « Son de l'appel (entrée) » = <span class="dev">CABLE Output</span> / <span class="dev">BlackHole 2ch</span>.</td></tr>
+      <tr><td>L'interlocuteur n'entend rien</td><td>Micro de l'app d'appel = <span class="dev">CABLE-A Output</span> / <span class="dev">BlackHole 16ch</span>. Dans l'app, « Vers l'appel » = <span class="dev">CABLE-A Input</span> / <span class="dev">BlackHole 16ch</span>.</td></tr>
+      <tr><td>L'interlocuteur entend mon français</td><td>Le micro de l'app d'appel est votre vrai micro : remplacez-le par <span class="dev">CABLE-A Output</span> / <span class="dev">BlackHole 16ch</span>.</td></tr>
+      <tr><td>Je n'entends rien</td><td>Sélectionnez vos écouteurs dans « Mes écouteurs ». Vérifiez que « Lire la traduction française » est coché (sinon : sous-titres seulement).</td></tr>
+      <tr><td>La liste n'affiche que « Par défaut » ou aucun nom</td><td>Cliquez sur « Détecter les périphériques audio » et autorisez le micro.</td></tr>
+      <tr><td>Son robotique dans les écouteurs</td><td>Le micro Bluetooth est utilisé : choisissez le micro du PC ou un micro USB dans « Mon micro ».</td></tr>
+      <tr><td>« Ce navigateur ne permet pas de choisir la sortie audio »</td><td>Utilisez Chrome ou Edge sur PC/Mac (pas sur téléphone, ni Safari, ni Firefox).</td></tr>
+    </table></div>
+  </section>
+
+  <footer><a class="back" href="./">← Retour à l'app</a></footer>
+</main>
+</body>
+</html>
