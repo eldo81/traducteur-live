@@ -859,8 +859,14 @@ async function testKey() {
     const r = await fetch(API + '/models', { headers: { Authorization: 'Bearer ' + k } });
     if (r.ok) {
       const j = await r.json();
-      const ids = (j.data || []).map((m) => m.id).filter((id) => id.includes('realtime'));
-      out.textContent = '✅ Clé valide' + (ids.length ? ' — modèles realtime : ' + ids.slice(0, 6).join(', ') : '');
+      const ids = (j.data || []).map((m) => m.id).filter((id) => id.includes('realtime')).sort();
+      // Le modèle choisi dans la liste ci-dessous est-il accessible avec cette clé ?
+      const sel = $('setModel').value === 'custom' ? $('setCustomModel').value.trim() : $('setModel').value;
+      const ok = !ids.length || ids.includes(sel);
+      out.textContent = '✅ Clé valide. ' + (ok
+        ? `Modèle « ${sel} » disponible.`
+        : `⚠️ « ${sel} » n'est pas dans votre compte : choisissez-en un autre.`)
+        + (ids.length ? ' Modèles realtime : ' + ids.join(', ') : '');
     } else out.textContent = '❌ ' + (await httpError(r)).message;
   } catch (e) { out.textContent = '❌ Réseau : ' + e.message; }
 }
