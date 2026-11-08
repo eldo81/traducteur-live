@@ -22,14 +22,31 @@ const SILENT_MARK = '·';        // réponse "rien à traduire" (mauvaise langue
 const DEFAULTS = {
   model: 'gpt-realtime-2',
   customModel: '',
-  voice: 'marin',
+  voice: 'cedar',          // voix masculine
+  accent: 'senegal',       // accent de la voix (voir ACCENTS)
   speed: 1.0,
   fontSize: 32,
   vad: 'fast',
   transcribe: 'gpt-live-transcribe',
   speakFr: false,
   halfDuplex: true,
+  settingsVersion: 2,
 };
+
+/** Consignes d'accent ajoutées aux instructions (ne changent que la prononciation). */
+const ACCENTS = {
+  neutral: '',
+  senegal: `
+VOICE & ACCENT: You are a West African man from Dakar, Senegal, a French speaker who speaks English fluently. Speak with that natural Senegalese / francophone West African accent in a warm, calm, deep and confident professional male tone. Keep a steady pace and clear articulation so the listener understands easily over a phone. The accent only changes pronunciation: the wording stays an exact translation.`,
+  anglo: `
+VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / Ghana). Speak with that natural West African English accent in a warm, calm, deep and confident professional male tone, with clear articulation for a phone line. The accent only changes pronunciation: the wording stays an exact translation.`,
+};
+
+/** Instructions complètes pour un mode (contrat + mode + accent si sortie vocale). */
+function instructionsFor(mode) {
+  const accent = wantsAudio(mode) ? (ACCENTS[S.settings.accent] || '') : '';
+  return BASE_INSTRUCTIONS + '\n' + MODE_INSTRUCTIONS[mode] + accent;
+}
 
 /** Ordre de repli si le modèle choisi est refusé par OpenAI. */
 const MODEL_FALLBACKS = ['gpt-realtime-2', 'gpt-realtime-2.1', 'gpt-realtime-2.1-mini', 'gpt-realtime-1.5'];
@@ -117,8 +134,16 @@ const el = {
  * Réglages & stockage local
  * ===================================================================== */
 function loadSettings() {
-  try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem(LS.settings) || '{}') }; }
-  catch { return { ...DEFAULTS }; }
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(LS.settings) || '{}'); } catch {}
+  // Migration v2 : voix masculine + accent sénégalais par défaut (demande utilisateur)
+  if ((saved.settingsVersion || 1) < 2) {
+    saved.voice = DEFAULTS.voice;
+    saved.accent = DEFAULTS.accent;
+    saved.settingsVersion = 2;
+    try { localStorage.setItem(LS.settings, JSON.stringify({ ...DEFAULTS, ...saved })); } catch {}
+  }
+  return { ...DEFAULTS, ...saved };
 }
 function saveSettings() {
   try { localStorage.setItem(LS.settings, JSON.stringify(S.settings)); } catch {}
@@ -188,7 +213,7 @@ function buildSession(mode) {
   return {
     type: 'realtime',
     model: modelName(),
-    instructions: BASE_INSTRUCTIONS + '\n' + MODE_INSTRUCTIONS[mode],
+    instructions: instructionsFor(mode),
     output_modalities: wantsAudio(mode) ? ['audio'] : ['text'],
     audio: {
       input: {
@@ -206,7 +231,7 @@ function buildSession(mode) {
 function sessionPatch(mode) {
   return {
     type: 'realtime',
-    instructions: BASE_INSTRUCTIONS + '\n' + MODE_INSTRUCTIONS[mode],
+    instructions: instructionsFor(mode),
     output_modalities: wantsAudio(mode) ? ['audio'] : ['text'],
     audio: { input: { transcription: transcription(mode), turn_detection: turnDetection() } },
   };
@@ -507,18 +532,11 @@ function onEvent(ev) {
     case 'response.output_audio_transcript.delta': {
       const e = entryForResponse(ev.response_id);
       if (!e) break;
+      if (e.suppressed) break;
       e.dst += ev.delta || '';
-      // Garde-fou : réponse « rien à traduire » → on l'interrompt pour qu'elle ne soit jamais prononcée
-      if (e.dst.trim().startsWith(SILENT_MARK) && !S.respMuted.get(ev.response_id)) {
-        S.respMuted.set(ev.response_id, true);
-        send({ type: 'response.cancel', response_id: ev.response_id });
-        // Ne pas couper la fin d'une traduction précédente encore en lecture
-        const otherPlaying = S.aiSpeaking && S.playingResp && S.playingResp !== ev.response_id;
-        if (!otherPlaying) {
-          el.audio.muted = true;
-          if (S.aiSpeaking) send({ type: 'output_audio_buffer.clear' });
-          setAiSpeaking(false);
-        }
+      // Garde-fous : « rien à traduire » ou écho de sa propre voix → jamais prononcé
+      if (e.dst.trim().startsWith(SILENT_MARK) || (e.dst.length >= 12 && isEcho(e.dst))) {
+        suppressResponse(ev.response_id, e);
         break;
       }
       autoMuteIfNeeded(ev.response_id, e.dst);
@@ -529,8 +547,10 @@ function onEvent(ev) {
     case 'response.output_audio_transcript.done': {
       const e = entryForResponse(ev.response_id);
       if (!e) break;
+      if (e.suppressed) break;
       const full = (ev.text || ev.transcript || e.dst || '').trim();
       e.dst = full;
+      if (isEcho(full)) { suppressResponse(ev.response_id, e); break; }
       renderLive(e); renderEntry(e);
       break;
     }
@@ -575,6 +595,46 @@ function onEvent(ev) {
   }
 }
 
+/* =====================================================================
+ * Anti-écho logiciel : si l'app « traduit » ce qu'elle vient elle-même de dire
+ * (fin de sa voix captée par le micro), la réponse est annulée et effacée.
+ * ===================================================================== */
+const recentSpoken = []; // { t, words:Set }
+function wordsOf(text) {
+  return new Set((text || '').toLowerCase()
+    .replace(/\bi am\b/g, 'im').replace(/[’']/g, '')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean));
+}
+function rememberSpoken(text) {
+  recentSpoken.push({ t: Date.now(), words: wordsOf(text) });
+  while (recentSpoken.length > 4) recentSpoken.shift();
+}
+function isEcho(text) {
+  if (!S.mode || S.mode === 'listen' && !S.settings.speakFr) return false;
+  const w = wordsOf(text);
+  if (w.size < 2) return false;
+  const now = Date.now();
+  return recentSpoken.some((r) => {
+    if (now - r.t > 20000) return false;
+    let common = 0; w.forEach((x) => { if (r.words.has(x)) common++; });
+    return common / w.size >= 0.8;
+  });
+}
+/** Annule une réponse (silence ou écho) sans couper une traduction précédente en lecture. */
+function suppressResponse(respId, e) {
+  e.suppressed = true;
+  e.dst = SILENT_MARK;
+  S.respMuted.set(respId, true);
+  send({ type: 'response.cancel', response_id: respId });
+  const otherPlaying = S.aiSpeaking && S.playingResp && S.playingResp !== respId;
+  if (!otherPlaying) {
+    el.audio.muted = true;
+    if (S.aiSpeaking) send({ type: 'output_audio_buffer.clear' });
+    setAiSpeaking(false);
+  }
+  removeEntryDom(e);
+}
+
 /** Supprime les vieux items de la conversation serveur : contexte court = coût et latence maîtrisés. */
 function pruneServerItems() {
   while (S.serverItems.length > MAX_CONTEXT_ITEMS) {
@@ -602,7 +662,7 @@ function setAiSpeaking(on) {
       if (S.micTrack) S.micTrack.enabled = true;
       el.mic.classList.remove('muted');
       if (S.mode) setStatus('on', labelMode(S.mode) + ' — à l’écoute');
-    }, S.settings.halfDuplex ? 300 : 0);
+    }, S.settings.halfDuplex ? 600 : 0);
   }
 }
 
@@ -648,6 +708,7 @@ function computeDir(e) {
 }
 function finalizeEntry(e) {
   e.dir = computeDir(e);
+  if (!isSilent(e.dst) && wantsAudio(e.mode)) rememberSpoken(e.dst);
   if (isSilent(e.dst)) { removeEntryDom(e); S.entries.delete(e.id); S.dropped.add(e.id); return; }
   persistEntry(e);
   renderEntry(e);
@@ -843,6 +904,7 @@ function openSettings() {
   $('setVad').value = s.vad;
   $('setTranscribe').value = s.transcribe;
   $('setSpeakFr').checked = s.speakFr;
+  $('setAccent').value = s.accent;
   $('setHalfDuplex').checked = s.halfDuplex;
   $('keyResult').textContent = '';
   toggleCustomModel();
@@ -863,6 +925,7 @@ function readSettingsForm() {
     vad: $('setVad').value,
     transcribe: $('setTranscribe').value,
     speakFr: $('setSpeakFr').checked,
+    accent: $('setAccent').value,
     halfDuplex: $('setHalfDuplex').checked,
   });
   saveSettings();
@@ -871,7 +934,13 @@ function readSettingsForm() {
   if (S.pc && S.mode) {
     send({ type: 'session.update', session: sessionPatch(S.mode) });
     if (prev.voice !== S.settings.voice || prev.model !== S.settings.model || prev.customModel !== S.settings.customModel || prev.speed !== S.settings.speed) {
-      toast('Voix / modèle / vitesse : appliqués à la prochaine connexion (Stop puis relancer).');
+      // La voix et le modèle ne changent pas en cours de session : reconnexion automatique
+      const m = S.mode;
+      stopAll();
+      const g = S.gen;
+      setTimeout(() => { if (g === S.gen && !S.mode) startMode(m); }, 300);
+      toast('Nouvelle voix / modèle : reconnexion…');
+      return;
     }
     if (!S.settings.halfDuplex && S.micTrack) { S.micTrack.enabled = true; el.mic.classList.remove('muted'); }
   }

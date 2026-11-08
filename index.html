@@ -104,18 +104,27 @@
 
       <label>Voix
         <select id="setVoice">
-          <option value="marin">marin (recommandée)</option>
-          <option value="cedar">cedar (recommandée)</option>
-          <option value="alloy">alloy</option>
-          <option value="ash">ash</option>
-          <option value="ballad">ballad</option>
-          <option value="coral">coral</option>
-          <option value="echo">echo</option>
-          <option value="sage">sage</option>
-          <option value="shimmer">shimmer</option>
-          <option value="verse">verse</option>
+          <option value="cedar">cedar — homme, grave (recommandée)</option>
+          <option value="ash">ash — homme, posé</option>
+          <option value="echo">echo — homme, clair</option>
+          <option value="verse">verse — homme, expressif</option>
+          <option value="ballad">ballad — homme, doux</option>
+          <option value="marin">marin — femme</option>
+          <option value="coral">coral — femme</option>
+          <option value="sage">sage — femme</option>
+          <option value="shimmer">shimmer — femme</option>
+          <option value="alloy">alloy — neutre</option>
         </select>
         <small>Un changement de voix s'applique à la prochaine connexion (après Stop).</small>
+      </label>
+
+      <label>Accent de la voix
+        <select id="setAccent">
+          <option value="senegal">Africain francophone — Sénégal (recommandé)</option>
+          <option value="anglo">Africain anglophone — Nigeria / Ghana</option>
+          <option value="neutral">Neutre (américain)</option>
+        </select>
+        <small>Consigne donnée au modèle : il imite l'accent de façon crédible mais pas parfaite. S'applique dès l'enregistrement.</small>
       </label>
 
       <label><span>Vitesse de la voix : <b id="speedVal">1.0</b></span>

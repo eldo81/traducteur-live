@@ -80,7 +80,7 @@ Sur iPhone ou iPad : Safari → Partager → *Sur l'écran d'accueil*. Sur PC : 
 - Phrases courtes, une idée par phrase. Marquez une pause nette entre deux phrases.
 - Annoncez les chiffres clairement : « deux cent mille dollars, FOB Dakar ».
 - Si l'app coupe vos phrases trop tôt : Réglages → Réactivité → **Standard** ou **Sémantique**.
-- Si l'app retraduit sa propre voix : éloignez un peu l'appareil, baissez le volume de l'app et vérifiez que l'option **Anti-écho** est cochée.
+- Si l'app retraduit sa propre voix : éloignez un peu l'appareil, baissez le volume de l'app et vérifiez que l'option **Anti-écho** est cochée. Un filtre supprime aussi automatiquement toute « traduction » qui répète ce que l'app vient de dire.
 - Avec des **écouteurs** sur l'appareil traducteur : cochez « Lire la traduction française » et décochez **Anti-écho** pour ne plus couper le micro.
 - Le modèle par défaut est `gpt-realtime-2`, pour la meilleure qualité. Si OpenAI refuse le modèle choisi, l'app bascule seule sur le suivant disponible. Pour les appels courants, `gpt-realtime-2.1-mini` coûte bien moins cher.
 
@@ -95,7 +95,9 @@ Sur iPhone ou iPad : Safari → Partager → *Sur l'écran d'accueil*. Sur PC : 
 |---|---|
 | Clé API | Stockée localement, testable (liste les modèles realtime accessibles). |
 | Modèle | `gpt-realtime-2` (par défaut), `gpt-realtime-2.1-mini`, `gpt-realtime-2.1`, `gpt-realtime-1.5`, les modèles obsolètes, ou un nom personnalisé. Appliqué à la prochaine connexion. |
-| Voix / vitesse | Voix de la traduction prononcée. Appliquées à la prochaine connexion (Stop puis relancer). Les autres réglages s'appliquent immédiatement. |
+| Voix | Par défaut `cedar`, une voix d'homme grave. Le genre est indiqué dans la liste. Un changement pendant une session reconnecte l'app automatiquement. |
+| Accent | **Africain francophone, Sénégal** (par défaut), africain anglophone (Nigeria / Ghana) ou neutre. C'est une consigne donnée au modèle : l'accent est crédible mais pas parfait, et le contenu traduit ne change pas. |
+| Vitesse | Débit de la voix (0,8 à 1,4). |
 | Taille du texte | 18 à 64 px pour les sous-titres. |
 | Réactivité | Durée de silence qui déclenche la traduction d'un segment : 350 ms, 600 ms ou détection sémantique. |
 | Transcription | Affiche le texte original : `gpt-live-transcribe` (temps réel, par défaut), `gpt-transcribe` (plus précis) ou désactivée. Les deux premiers reçoivent une liste de termes commerciaux (Incoterms, L/C, BL, FCFA…) pour mieux les reconnaître. |
@@ -114,7 +116,7 @@ icons/          Icônes de l'application
 .nojekyll       Désactive le traitement Jekyll de GitHub Pages
 ```
 
-Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.3.1`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.4.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
 
 ## 7. Dépannage
 
@@ -134,7 +136,7 @@ Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuelleme
 2. `POST /v1/realtime/client_secrets` (clé API) → clé éphémère avec la configuration de session (instructions d'interprète, VAD, transcription, voix).
 3. `RTCPeerConnection` + data channel `oai-events`. L'offre SDP part vers `POST /v1/realtime/calls` (clé éphémère). En secours, envoi multipart `sdp` + `session` avec la clé API.
 4. VAD serveur avec `silence_duration_ms` de 350 ms par défaut : chaque segment court est traduit sans attendre la fin des longues phrases.
-5. Anti-écho : les événements WebRTC `output_audio_buffer.started` / `stopped` coupent puis rétablissent la piste micro (`track.enabled`), avec une traîne de 300 ms et une sécurité de 2 min.
+5. Anti-écho : les événements WebRTC `output_audio_buffer.started` / `stopped` coupent puis rétablissent la piste micro (`track.enabled`), avec une traîne de 600 ms et une sécurité de 2 min. Un filtre logiciel supprime en plus toute réponse qui reprend à 80 % ou plus les mots d'une phrase prononcée dans les 20 dernières secondes.
 7. Garde-fou « rien à traduire » : si le modèle commence sa réponse par le marqueur `·`, l'app l'annule et coupe le son, pour que ce marqueur ne soit jamais prononcé.
 8. Modèles `gpt-realtime-2.x` : effort de raisonnement réglé sur `minimal` pour limiter la latence. Si l'API refuse ce réglage, l'app relance la connexion sans lui.
 6. En mode Écoute sans voix, la sortie est en texte seul (`output_modalities: ["text"]`) : c'est plus rapide et moins cher.
