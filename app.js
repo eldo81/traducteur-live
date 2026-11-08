@@ -94,6 +94,7 @@ const S = {
   unmuteTimer: 0, safetyTimer: 0,
   usage: { input: 0, output: 0, startedAt: 0 },
   currentRespId: null,
+  playingResp: null,      // réponse dont l'audio est en cours de lecture
   gen: 0,                 // incrémenté à chaque Stop : invalide une connexion en cours
   dropped: new Set(),     // segments « rien à traduire » supprimés (ignorer la transcription tardive)
 };
@@ -192,7 +193,7 @@ function buildSession(mode) {
     audio: {
       input: {
         noise_reduction: { type: 'far_field' }, // appareil posé à côté d'un haut-parleur
-        transcription: transcription(mode),
+        ...(transcription(mode) ? { transcription: transcription(mode) } : {}),
         turn_detection: turnDetection(),
       },
       output: { voice: S.settings.voice, speed: Number(S.settings.speed) || 1 },
@@ -286,7 +287,8 @@ async function connect(mode) {
         }
         // Modèle refusé (inexistant / non accessible) : repli automatique sur le suivant
         const next = MODEL_FALLBACKS.find((m) => !tried.has(m));
-        if ([400, 403, 404].includes(err.status) && /model/i.test(err.message) && next) {
+        const aboutTranscription = /transcri/i.test(err.message) || /transcription/i.test(err.param || '');
+        if ([400, 403, 404].includes(err.status) && /model/i.test(err.message) && !aboutTranscription && next) {
           console.warn('Modèle refusé :', session.model, '→ essai', next);
           S.settings.model = next;
           saveSettings();
@@ -318,6 +320,7 @@ async function connect(mode) {
   S.connecting = false;
   S.usage.startedAt = Date.now();
   await requestWakeLock();
+  if (gen !== S.gen) releaseWakeLock(); // Stop pressé pendant la demande
 }
 
 async function createClientSecret(apiKey, session) {
@@ -357,8 +360,13 @@ async function postSdpUnified(sdp, apiKey, session) {
 
 async function httpError(r) {
   let msg = 'HTTP ' + r.status;
-  try { const j = await r.json(); if (j.error && j.error.message) msg += ' — ' + j.error.message; } catch {}
-  const e = new Error(msg); e.status = r.status; return e;
+  let param = '';
+  try {
+    const j = await r.json();
+    if (j.error && j.error.message) msg += ' — ' + j.error.message;
+    if (j.error && j.error.param) param = String(j.error.param);
+  } catch {}
+  const e = new Error(msg); e.status = r.status; e.param = param; return e;
 }
 
 function send(obj) {
@@ -380,9 +388,10 @@ async function startMode(mode) {
       await connect(mode);
     } else {
       // Changement de mode à chaud : on coupe ce qui est en cours puis on reconfigure
-      if (S.currentRespId) send({ type: 'response.cancel' });
+      if (S.currentRespId) send({ type: 'response.cancel', response_id: S.currentRespId });
       if (S.aiSpeaking) send({ type: 'output_audio_buffer.clear' });
       send({ type: 'input_audio_buffer.clear' });
+      el.audio.muted = false;
       setAiSpeaking(false);
       send({ type: 'session.update', session: sessionPatch(mode) });
     }
@@ -404,7 +413,8 @@ function reconnect() {
   if (!m) return;
   toast('Connexion perdue — reconnexion…', true);
   stopAll();
-  setTimeout(() => startMode(m), 500);
+  const g = S.gen;
+  setTimeout(() => { if (g === S.gen && !S.mode) startMode(m); }, 500); // annulé si Stop entre-temps
 }
 
 function stopAll(isError) {
@@ -422,7 +432,7 @@ function stopAll(isError) {
   el.audio.muted = false;
   S.aiSpeaking = false;
   S.entries.clear(); S.respToEntry.clear(); S.respMuted.clear();
-  S.serverItems = []; S.lastCommittedItem = null; S.dropped.clear(); S.currentRespId = null;
+  S.serverItems = []; S.lastCommittedItem = null; S.dropped.clear(); S.currentRespId = null; S.playingResp = null;
   releaseWakeLock();
   renderModeButtons();
   el.stop.disabled = true;
@@ -436,7 +446,7 @@ const dirLabel = (m) => ({ listen: 'Anglais → Français', speak: 'Français �
 
 /* =====================================================================
  * Événements du serveur Realtime
- * (noms GA + anciens noms bêta pour robustesse)
+ * (noms GA, vérifiés contre le SDK officiel)
  * ===================================================================== */
 function onEvent(ev) {
   switch (ev.type) {
@@ -495,9 +505,7 @@ function onEvent(ev) {
 
     // --- Texte traduit en flux (texte seul ou transcription de l'audio) ---
     case 'response.output_text.delta':
-    case 'response.text.delta':
-    case 'response.output_audio_transcript.delta':
-    case 'response.audio_transcript.delta': {
+    case 'response.output_audio_transcript.delta': {
       const e = entryForResponse(ev.response_id);
       if (!e) break;
       e.dst += ev.delta || '';
@@ -519,9 +527,7 @@ function onEvent(ev) {
       break;
     }
     case 'response.output_text.done':
-    case 'response.text.done':
-    case 'response.output_audio_transcript.done':
-    case 'response.audio_transcript.done': {
+    case 'response.output_audio_transcript.done': {
       const e = entryForResponse(ev.response_id);
       if (!e) break;
       const full = (ev.text || ev.transcript || e.dst || '').trim();
@@ -533,6 +539,8 @@ function onEvent(ev) {
     // --- Lecture audio côté WebRTC : anti-écho (half-duplex) ---
     case 'output_audio_buffer.started':
       S.playingResp = ev.response_id;
+      // Le son suit la réponse réellement jouée (évite qu'un « · » précédent rende muette la suivante)
+      el.audio.muted = !!S.respMuted.get(ev.response_id);
       if (!S.respMuted.get(ev.response_id)) setAiSpeaking(true);
       break;
     case 'output_audio_buffer.stopped':
@@ -603,6 +611,7 @@ function setAiSpeaking(on) {
 function autoMuteIfNeeded(respId, text) {
   if (S.mode !== 'auto' || S.settings.speakFr) return;
   if (S.respMuted.has(respId) || text.length < 12) return;
+  if (S.aiSpeaking && S.playingResp && S.playingResp !== respId) return; // une autre traduction joue encore
   const l = detectLang(text);
   if (!l) return; // indécis : on réévalue au fragment suivant, le son reste actif
   const fr = l === 'fr';
@@ -922,6 +931,7 @@ function init() {
   });
   $('btnShowKey').addEventListener('click', () => {
     const i = $('setKey'); i.type = i.type === 'password' ? 'text' : 'password';
+    $('btnShowKey').setAttribute('aria-pressed', String(i.type === 'text'));
   });
   $('btnTestKey').addEventListener('click', testKey);
   el.dialog.addEventListener('close', () => {
