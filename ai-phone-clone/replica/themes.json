@@ -1,0 +1,331 @@
+{
+ "_about": "Themes for a call-translation app (AI Phone clone). Copied from the replica-entrepreneur default and edited for this category, with French/Spanish words since a share of reviews are French. Regex, case-insensitive. kind = complaint | request.",
+ "request_patterns": [
+  "\\bi wish\\b",
+  "\\bplease add\\b",
+  "\\bwould be (nice|great|good|helpful)\\b",
+  "\\bwould love\\b",
+  "\\bshould (be able|have|base|offer)\\b",
+  "\\bthere should be\\b",
+  "\\bno way to\\b",
+  "\\bthere[’']?s no (way|option)\\b",
+  "\\bif they had\\b",
+  "\\bi would appreciate\\b",
+  "\\bmy suggestion\\b",
+  "\\bdoes this app (also )?support\\b",
+  "\\bprendre en compte\\b",
+  "\\baucun moyen de\\b",
+  "\\bpienso que\\b",
+  "\\bdeveria\\b",
+  "\\bhow (can|do) i\\b"
+ ],
+ "themes": [
+  {
+   "id": "sub_plus_credits",
+   "label": "Subscription PLUS credits (pay twice, not unlimited)",
+   "kind": "complaint",
+   "patterns": [
+    "subscription.{0,80}credits",
+    "credits.{0,80}subscription",
+    "in addition to the subscription",
+    "plus a per minute",
+    "not truly a year subscription",
+    "abonnement.{0,80}cr[ée]dit",
+    "cr[ée]dits? en plus",
+    "payer les communications",
+    "surfactur",
+    "pay for calls",
+    "don[’']?t get unlimited",
+    "not (even )?unlimited",
+    "pas illimit",
+    "after activating the subscription",
+    "only includes a very limited amount"
+   ]
+  },
+  {
+   "id": "price",
+   "label": "Too expensive / opaque price",
+   "kind": "complaint",
+   "patterns": [
+    "\\bexpensive\\b",
+    "\\bpric(e|ey|ing)\\b",
+    "\\bcher\\b",
+    "\\bch[eè]re\\b",
+    "\\btrop cher\\b",
+    "\\bdemasiado\\b",
+    "\\brip(ping)? ?off\\b",
+    "\\bgo broke\\b",
+    "\\bco[uû]te\\b",
+    "hidden (fee|charge)",
+    "not transparent",
+    "wasn[’']?t really clear",
+    "\\bthe cost\\b",
+    "\\bcostly\\b",
+    "costs? (has|have) gone up",
+    "\\bcosts\\b(?! you)(?<!all costs)"
+   ]
+  },
+  {
+   "id": "trial_charge",
+   "label": "Can't test before paying / trial that charges",
+   "kind": "complaint",
+   "patterns": [
+    "free trial",
+    "trial period",
+    "\\btrial\\b",
+    "essai",
+    "tester sans payer",
+    "prueba gratis",
+    "not free",
+    "pas gratuit",
+    "no free",
+    "\\bcharged\\b",
+    "charge (on|was made)",
+    "surprise charge",
+    "without knowledge",
+    "grátis"
+   ]
+  },
+  {
+   "id": "refund_cancel",
+   "label": "Refunds and cancelling",
+   "kind": "complaint",
+   "patterns": [
+    "\\brefund",
+    "rembours",
+    "restitution",
+    "\\bcancel",
+    "unsubscri",
+    "money back",
+    "get the money back",
+    "outlay"
+   ]
+  },
+  {
+   "id": "cutoff",
+   "label": "Credits run out mid-call / hold time eats credits / call cut",
+   "kind": "complaint",
+   "patterns": [
+    "credits ran out",
+    "disconnect",
+    "cut off",
+    "hang(s)? up after",
+    "mise en attente",
+    "hold music",
+    "on hold",
+    "mid conversation",
+    "5 minute",
+    "low-credit"
+   ]
+  },
+  {
+   "id": "latency",
+   "label": "Delay / latency",
+   "kind": "complaint",
+   "patterns": [
+    "\\bdelay",
+    "latency",
+    "\\bslow\\b",
+    "lento",
+    "медленно",
+    "\\bwait(ing)?\\b",
+    "five second",
+    "to a crawl",
+    "d[ée]lai",
+    "needs to be faster"
+   ]
+  },
+  {
+   "id": "quality",
+   "label": "Bad translation / robotic voice / wrong language",
+   "kind": "complaint",
+   "patterns": [
+    "robot",
+    "inaccurate",
+    "not very accurate",
+    "translat(ion|es?) (quality )?(was )?(poor|bad|wrong)",
+    "poor quality",
+    "traduit mal",
+    "mauvaise qualit",
+    "incompr[ée]hensible",
+    "miss interpret",
+    "doesn[’']?t sound like",
+    "no one can understand",
+    "unusable",
+    "inutilisable",
+    "erreurs",
+    "nonsense|non-sense",
+    "didn[’']?t translate anything",
+    "doesn[’']?t translate",
+    "won[’']?t translate",
+    "it doesn[’']?t translate"
+   ]
+  },
+  {
+   "id": "whatsapp_link",
+   "label": "WhatsApp / link call fails on the other side",
+   "kind": "complaint",
+   "patterns": [
+    "whatsapp",
+    "\\blink\\b",
+    "messenger",
+    "captions were only working for me",
+    "couldn[’']?t hear each other",
+    "video goes black",
+    "only one way",
+    "only the caller can hear"
+   ]
+  },
+  {
+   "id": "broken",
+   "label": "Doesn't work / stopped working",
+   "kind": "complaint",
+   "patterns": [
+    "doesn[’']?t work",
+    "does not work",
+    "didn[’']?t work",
+    "not work",
+    "ne fonctionne pas",
+    "stopped",
+    "won[’']?t (let|accept)",
+    "\\berrors?\\b",
+    "worthless",
+    "junk",
+    "pas du tout fonctionn",
+    "no audio",
+    "no sound",
+    "can(no|')t call anyone"
+   ]
+  },
+  {
+   "id": "support",
+   "label": "Support that does not answer",
+   "kind": "complaint",
+   "patterns": [
+    "support",
+    "never gotten a response",
+    "no response",
+    "didn[’']?t answer",
+    "can[’']?t contact",
+    "ignore me",
+    "templated response",
+    "customer service",
+    "contact me",
+    "contéstame"
+   ]
+  },
+  {
+   "id": "number_sms",
+   "label": "Virtual number, SMS codes, caller ID, spam (telephony, V2)",
+   "kind": "complaint",
+   "patterns": [
+    "verif",
+    "\\bcode\\b",
+    "\\bsms\\b",
+    "phone number",
+    "num[ée]ro",
+    "\\bspam\\b",
+    "scam warning",
+    "caller id",
+    "incoming call",
+    "answer (the|a) phone",
+    "\\+44",
+    "\\+33",
+    "landline",
+    "voice ?mail"
+   ]
+  },
+  {
+   "id": "intro_original_voice",
+   "label": "Intro announcement / original voice heard / can't turn translation off",
+   "kind": "complaint",
+   "patterns": [
+    "long introduction",
+    "hears your original voice",
+    "my voice and the computer[’']?s voice",
+    "turn the translator off",
+    "stop translating",
+    "parle a ma place",
+    "mute the original"
+   ]
+  },
+  {
+   "id": "noise_turns",
+   "label": "Needs quiet and pauses / groups / turn-taking",
+   "kind": "complaint",
+   "patterns": [
+    "quiet place",
+    "requires pauses",
+    "plusieurs personne",
+    "be patient",
+    "natural pauses",
+    "store or cafe",
+    "noisy"
+   ]
+  },
+  {
+   "id": "languages",
+   "label": "Weak non-European language pairs (Chinese, Arabic, Turkic, Slavic, Vietnamese...)",
+   "kind": "request",
+   "patterns": [
+    "chin(ese|ois)",
+    "mandarin",
+    "cantonese",
+    "arabic",
+    "vietnamese",
+    "bosnien|slaves",
+    "bulgare",
+    "georgian",
+    "turk",
+    "semitic",
+    "japanese|\\bjp\\b",
+    "urdu|hindi",
+    "korean"
+   ]
+  },
+  {
+   "id": "business_use",
+   "label": "Business use (clients, suppliers, banks, doctors)",
+   "kind": "request",
+   "patterns": [
+    "clients?",
+    "suppliers?",
+    "customers? who",
+    "doctors?",
+    "patients",
+    "work with",
+    "my work",
+    "外国客户",
+    "call ?cent(er|re)|колл центр",
+    "agence",
+    "credit history",
+    "with my bank",
+    "banque"
+   ]
+  },
+  {
+   "id": "payment_access",
+   "label": "Can't pay / payment method",
+   "kind": "request",
+   "patterns": [
+    "comment le payer",
+    "pas encore un compte",
+    "impossible de s.abonner",
+    "won[’']?t let me (pay|subscribe)",
+    "repay"
+   ]
+  },
+  {
+   "id": "free_builtin",
+   "label": "Built-in phone features are free (Apple, Samsung, Google)",
+   "kind": "complaint",
+   "patterns": [
+    "apple has",
+    "三星",
+    "samsung",
+    "免費",
+    "geofenced"
+   ]
+  }
+ ]
+}

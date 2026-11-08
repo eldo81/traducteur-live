@@ -37,3 +37,13 @@ Traduire dans un vrai appel WhatsApp natif,appel,skip,no,skip,impossible techniq
 Numéro virtuel US inclus + SMS / messagerie,téléphonie,skip,yes,skip,licences/KYC/spam ; inutile pour Afrique-Europe en V1
 Intégration écouteurs TransAI,extras,skip,yes,skip,partenariat matériel
 Marque / logo / textes / voix d'AI Phone,marque,skip,yes,skip,appartient à AI Phone
+Prix à la minute affiché avant achat + packs prépayés sans abonnement (minutes valables 12 mois) + facture au nom de l'entreprise,facturation,must,no,no,F1 fixes.md ; Argent 63 avis / 5 sources
+3 min offertes à l'inscription sans carte + appel test 30 s avec soi-même (micro et son),facturation,must,no,no,F2 ; essai qui facture 22 avis / 3 sources
+Compteur qui démarre quand les deux sont connectés et que quelqu'un parle ; pause après 30 s de silence ; minutes recréditées si l'appel échoue dans la 1re minute,facturation,must,no,no,F3 ; attente qui consomme les crédits + appels ratés
+Recharge Wave / Orange Money en plein appel sans raccrocher (alerte 2 min et 30 s ; 60 s de grâce),facturation,must,no,no,F4 ; complète l'avertissement solde bas ; coupure sèche 5 avis
+Vérification invité avant de rejoindre : micro / haut-parleur / sous-titres testés dans les deux sens + indicateur réseau,appel lien,must,no,no,F5 ; lien WhatsApp qui échoue côté invité 16 avis ; ça ne marche pas 41 avis
+Étiquette de qualité par paire de langues mesurée (Excellent / Bon / Bêta) : FR-EN FR-ZH FR-AR FR-TR FR-ES FR-PT,traduction,should,no,no,F6 ; qualité 38 avis / 6 sources ; langues 12 avis
+Lexique métier (produits / Incoterms / unités) + relecture et affichage en gros des chiffres (prix / quantités / dates),traduction,should,no,no,F6 ; négociation : erreurs sur les chiffres
+Support humain sur WhatsApp (réponse sous 24 h ouvrées) + remboursement en minutes d'un appel raté en un clic,compte,should,no,no,F7 ; support et remboursements 28 avis / 4 sources
+Récap commercial après l'appel (prix / quantités / délais / engagements) dans les deux langues envoyé sur WhatsApp,historique,should,no,no,F8 ; usage pro 11 avis ; prolonge le résumé IA
+Bouton Traduction en pause pendant l'appel ; pas d'annonce longue à l'invité (une ligne de consentement),appel,could,no,no,F9 ; 5 avis / 3 sources (mince)
