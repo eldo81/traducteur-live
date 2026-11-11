@@ -1052,6 +1052,10 @@ function init() {
   $('setModel').addEventListener('change', toggleCustomModel);
   $('setOutput').addEventListener('change', () => { toggleHeadsetBlock(); if ($('setOutput').value === 'headset') Headset.populate(false); });
   $('btnDetectDevices').addEventListener('click', () => Headset.populate(true));
+  $('btnTestEar').addEventListener('click', () => Headset.testOutput('setHsEarOut'));
+  $('btnTestCall').addEventListener('click', () => Headset.testOutput('setHsCallOut'));
+  $('btnTestInputs').addEventListener('click', () => Headset.testInputs());
+  ['setHsCallIn', 'setHsMicIn', 'setHsEarOut', 'setHsCallOut'].forEach((id) => $(id).addEventListener('change', () => Headset.populate(false)));
   $('setSpeed').addEventListener('input', (e) => { $('speedVal').textContent = Number(e.target.value).toFixed(2); });
   $('setFont').addEventListener('input', (e) => {
     $('fontVal').textContent = e.target.value;

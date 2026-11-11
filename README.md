@@ -129,7 +129,7 @@ icons/          Icônes de l'application
 .nojekyll       Désactive le traitement Jekyll de GitHub Pages
 ```
 
-Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.5.1`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.6.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
 
 ## 7. Dépannage
 

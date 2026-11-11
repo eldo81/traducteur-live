@@ -113,6 +113,18 @@
         </label>
         <label class="check"><input type="checkbox" id="setHsHearFr"> Lire la traduction française dans mes écouteurs (sinon sous-titres seuls)</label>
         <label class="check"><input type="checkbox" id="setHsMonitor"> Entendre la voix originale de l'interlocuteur en fond (20 %)</label>
+        <div id="hsWarn" class="hs-warn"></div>
+        <div class="hs-tests">
+          <span class="hs-tests-title">Tester sans appel</span>
+          <button type="button" id="btnTestEar" class="small-btn">🎧 Bip écouteurs</button>
+          <button type="button" id="btnTestCall" class="small-btn">📞 Bip vers l'appel</button>
+          <button type="button" id="btnTestInputs" class="small-btn">🎚 Niveaux des entrées (20 s)</button>
+          <div id="hsMeters" class="hs-meters" hidden>
+            <div>Son de l'appel <span class="meter wide"><span id="hsLvlCall"></span></span></div>
+            <div>Mon micro <span class="meter wide"><span id="hsLvlMic"></span></span></div>
+            <small>Parlez : la barre « Mon micro » doit bouger. Faites parler l'interlocuteur (ou lancez une vidéo dans Meet) : « Son de l'appel » doit bouger.</small>
+          </div>
+        </div>
         <a href="casque.html" target="_blank" rel="noopener" class="hs-guide">Guide d'installation des câbles audio (10 min) ↗</a>
       </div>
 

@@ -58,6 +58,86 @@ const Headset = (() => {
     fill('setHsMicIn', d.inputs, s.hsMicIn, (l) => !isCable(l));
     fill('setHsEarOut', d.outputs, s.hsEarOut, (l) => !isCable(l));
     fill('setHsCallOut', d.outputs, s.hsCallOut, (l) => /cable-a input|blackhole 16ch/i.test(l));
+    if (named) checkWiring(d);
+  }
+
+  /** Alertes de câblage les plus fréquentes (2ᵉ câble absent, sorties identiques…). */
+  function checkWiring(d) {
+    const warn = [];
+    const v = (id) => document.getElementById(id);
+    const label = (id) => { const o = v(id).selectedOptions[0]; return o ? o.textContent : ''; };
+    if (!d.outputs.some((x) => /cable-a input|blackhole 16ch/i.test(x.label))) {
+      warn.push('2ᵉ câble introuvable (« CABLE-A Input »). Installez VB-CABLE A+B (Windows) ou BlackHole 16ch (Mac), puis redémarrez le PC.');
+    }
+    if (v('setHsCallOut').value && v('setHsCallOut').value === v('setHsEarOut').value) {
+      warn.push('« Mes écouteurs » et « Vers l\'appel » sont identiques : l\'interlocuteur entendrait le français.');
+    }
+    if (/cable|blackhole/i.test(label('setHsMicIn'))) warn.push('« Mon micro » est un câble virtuel : choisissez le micro du PC.');
+    if (/cable|blackhole/i.test(label('setHsEarOut'))) warn.push('« Mes écouteurs » est un câble virtuel : choisissez votre casque.');
+    if (label('setHsCallOut') && !/cable|blackhole|voicemeeter|virtual/i.test(label('setHsCallOut'))) warn.push('« Vers l\'appel » n\'est pas un câble virtuel : l\'anglais n\'arrivera pas dans Meet.');
+    const box = document.getElementById('hsWarn');
+    box.textContent = warn.length ? '⚠️ ' + warn.join('\n⚠️ ') : '✅ Câblage cohérent.';
+    box.className = 'hs-warn' + (warn.length ? ' bad' : ' ok');
+  }
+
+  /* ---------------------------------------------------------------
+   * Tests sans appel : bip sur une sortie, niveaux des deux entrées
+   * ------------------------------------------------------------- */
+  async function testOutput(selId) {
+    const id = document.getElementById(selId).value;
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const dest = ctx.createMediaStreamDestination();
+    [0, 0.5].forEach((t) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = selId === 'setHsCallOut' ? 660 : 880;
+      g.gain.value = 0.25;
+      o.connect(g).connect(dest);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.3);
+    });
+    const a = new Audio();
+    try { if (id) await a.setSinkId(id); } catch (e) { toast('Sortie introuvable : ' + e.message, true); ctx.close(); return; }
+    a.srcObject = dest.stream;
+    a.play().catch(() => {});
+    setTimeout(() => { a.srcObject = null; ctx.close(); }, 1500);
+    toast(selId === 'setHsCallOut'
+      ? 'Bip envoyé « Vers l\'appel » : votre interlocuteur (ou votre téléphone dans la réunion) doit l\'entendre.'
+      : 'Bip envoyé dans vos écouteurs.');
+  }
+
+  let inputTest = null;
+  async function testInputs() {
+    if (inputTest) return;
+    const ids = { call: document.getElementById('setHsCallIn').value, mic: document.getElementById('setHsMicIn').value };
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx.resume().catch(() => {});
+    const streams = [];
+    const bars = {};
+    try {
+      for (const k of ['call', 'mic']) {
+        const st = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: ids[k] }, echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+        streams.push(st);
+        const an = ctx.createAnalyser(); an.fftSize = 512;
+        ctx.createMediaStreamSource(st).connect(an);
+        bars[k] = an;
+      }
+    } catch (e) { toast('Entrée inaccessible : ' + e.message, true); streams.forEach((x) => x.getTracks().forEach((t) => t.stop())); ctx.close(); return; }
+    document.getElementById('hsMeters').hidden = false;
+    const buf = new Uint8Array(512);
+    const level = (an) => { an.getByteTimeDomainData(buf); let s2 = 0; for (let i = 0; i < buf.length; i++) { const x = (buf[i] - 128) / 128; s2 += x * x; } return Math.min(100, Math.sqrt(s2 / buf.length) * 400); };
+    let raf = 0;
+    const tick = () => {
+      document.getElementById('hsLvlCall').style.width = level(bars.call) + '%';
+      document.getElementById('hsLvlMic').style.width = level(bars.mic) + '%';
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    inputTest = setTimeout(() => {
+      cancelAnimationFrame(raf);
+      streams.forEach((x) => x.getTracks().forEach((t) => t.stop()));
+      ctx.close();
+      document.getElementById('hsMeters').hidden = true;
+      inputTest = null;
+    }, 20000);
   }
 
   function fill(id, devices, saved, guess) {
@@ -400,5 +480,5 @@ const Headset = (() => {
     el.micLevel.style.width = '0';
   }
 
-  return { supported, populate, start, stop, isActive, _channels: channels, _onEvent: onEvent };
+  return { supported, populate, start, stop, isActive, testOutput, testInputs, _channels: channels, _onEvent: onEvent };
 })();
