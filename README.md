@@ -100,6 +100,12 @@ Activation : Réglages → **Sortie audio → Écouteurs + PC** → *Détecter l
 
 Ce mode ne fonctionne pas sur téléphone : Chrome sur Android ne permet pas de choisir la sortie audio.
 
+## 4 ter. Extension Chrome pour Meet, Teams et Zoom (sans câble)
+
+Si vous ne pouvez rien installer d'autre sur le PC, l'extension **Interprète Live** fait tout dans le navigateur. Elle remplace le micro de Meet par la traduction anglaise, et traduit la voix de l'interlocuteur en français dans vos écouteurs. Pas de pilote, pas de droits administrateur.
+
+Installation et mode d'emploi : [extension.html](extension.html). Téléchargement : [interprete-live-extension.zip](interprete-live-extension.zip). Code source dans `extension/` ; après une modification, lancez `python3 extension/build.py` pour régénérer `main.js` et le zip.
+
 ## 5. Réglages disponibles
 
 | Réglage | Effet |
@@ -129,7 +135,7 @@ icons/          Icônes de l'application
 .nojekyll       Désactive le traitement Jekyll de GitHub Pages
 ```
 
-Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.6.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.7.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
 
 ## 7. Dépannage
 

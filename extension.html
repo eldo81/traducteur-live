@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interprète Live pour Meet — installation</title>
+<style>
+  :root { --bg:#0b0f14; --panel:#131a22; --line:#243041; --text:#e9eef5; --muted:#8a97a8; --accent:#3fa7ff; --ok:#2bb673; --warn:#ff8a3d; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; display: flex; flex-direction: column; gap: 22px; }
+  a { color: var(--accent); }
+  h1 { font-size: 30px; line-height: 1.15; margin: 0; }
+  h2 { font-size: 20px; margin: 0 0 8px; }
+  p { margin: 0; color: var(--muted); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+  code, kbd { background: #1a2330; border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-size: .92em; }
+  .dl { display: inline-block; background: var(--accent); color: #001222; font-weight: 700; text-decoration: none; padding: 14px 20px; border-radius: 12px; font-size: 17px; }
+  .ok { color: var(--ok); } .warn { color: var(--warn); }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  td, th { text-align: left; padding: 8px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<main>
+  <a href="./">← Retour à l'app</a>
+  <h1>Interprète Live dans Google Meet</h1>
+  <p>Une extension Chrome, sans droits administrateur ni pilote. Dans Meet, votre interlocuteur n'entend que la traduction anglaise de votre voix ; vous entendez sa voix traduite en français dans vos écouteurs. Fonctionne aussi avec Teams et Zoom <b>dans le navigateur</b> (pas avec les applications installées).</p>
+
+  <div class="card">
+    <h2>1. Télécharger</h2>
+    <a class="dl" href="interprete-live-extension.zip" download>⬇ Télécharger l'extension (.zip)</a>
+    <p>Dans <b>Téléchargements</b> : clic droit sur <code>interprete-live-extension.zip</code> → <b>Extraire tout…</b> → <b>Extraire</b>. Vous obtenez un dossier <code>interprete-live</code>.</p>
+  </div>
+
+  <div class="card">
+    <h2>2. Installer dans Chrome (1 min)</h2>
+    <ol>
+      <li>Dans Chrome, tapez <code>chrome://extensions</code> dans la barre d'adresse.</li>
+      <li>En haut à droite, activez <b>Mode développeur</b>.</li>
+      <li>Cliquez <b>Charger l'extension non empaquetée</b> et choisissez le dossier <code>interprete-live</code> (celui qui contient <code>manifest.json</code>).</li>
+      <li>Cliquez l'icône puzzle 🧩 de Chrome → épinglez <b>Interprète Live</b>.</li>
+    </ol>
+    <p>Edge : même procédure via <code>edge://extensions</code> (« Mode développeur » en bas à gauche).</p>
+  </div>
+
+  <div class="card">
+    <h2>3. Régler (une fois)</h2>
+    <ol>
+      <li>Cliquez l'icône <b>Interprète Live</b> : la page de réglages s'ouvre.</li>
+      <li>Collez votre <b>clé OpenAI</b> → <b>Tester la clé</b> (✅ attendu) → <b>Enregistrer</b>.</li>
+      <li>Voix <b>cedar</b> (homme) et accent <b>Sénégal</b> sont déjà choisis.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>4. Pendant la réunion Meet</h2>
+    <ol>
+      <li><b>Mettez vos écouteurs</b> (sinon la voix française repasse dans votre micro).</li>
+      <li>Ouvrez Meet et rejoignez la réunion. Un panneau <b>Interprète</b> apparaît en bas à gauche (sinon : touche <kbd>F5</kbd>).</li>
+      <li>Choisissez :
+        <div class="scroll"><table>
+          <tr><th>Bouton</th><th>Ce qui se passe</th></tr>
+          <tr><td><b>Auto</b></td><td>Les deux sens en même temps : vous parlez français → il entend l'anglais ; il parle anglais → vous entendez le français.</td></tr>
+          <tr><td><b>Écoute</b></td><td>Seulement lui → vous (votre vraie voix passe normalement).</td></tr>
+          <tr><td><b>Parle</b></td><td>Seulement vous → lui, en anglais.</td></tr>
+          <tr><td><b>Arrêt</b></td><td>Meet redevient normal (votre vrai micro).</td></tr>
+        </table></div>
+      </li>
+      <li>Parlez en phrases courtes, pause d'une demi-seconde entre deux phrases.</li>
+      <li>Fin de réunion : <b>Copier la transcription</b> pour garder une trace.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Test en 3 minutes avant l'appel</h2>
+    <ol>
+      <li>Créez une réunion sur <a href="https://meet.new" target="_blank" rel="noopener">meet.new</a> depuis le PC.</li>
+      <li>Rejoignez-la depuis votre téléphone (micro du téléphone coupé).</li>
+      <li>Sur le PC : <b>Auto</b>, puis dites une phrase en français → le téléphone doit entendre <span class="ok">l'anglais uniquement</span>.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Dépannage</h2>
+    <div class="scroll"><table>
+      <tr><th>Problème</th><th>Solution</th></tr>
+      <tr><td>Pas de panneau dans Meet</td><td>Rechargez la page (<kbd>F5</kbd>). Vérifiez dans <code>chrome://extensions</code> que l'extension est activée.</td></tr>
+      <tr><td>« Clé API manquante »</td><td>Icône de l'extension → collez la clé → Enregistrer → <kbd>F5</kbd> dans Meet.</td></tr>
+      <tr><td>L'interlocuteur entend encore mon français</td><td>Rechargez Meet <b>avant</b> de rejoindre : l'extension doit être active au moment où Meet ouvre le micro. Vérifiez que le bouton <b>Auto</b> ou <b>Parle</b> est surligné.</td></tr>
+      <tr><td>« Mode développeur » grisé</td><td>PC d'entreprise verrouillé par l'administrateur : utilisez un PC personnel, ou le mode Haut-parleur de l'app sur un 2ᵉ appareil.</td></tr>
+      <tr><td>Chrome affiche « Désactiver les extensions en mode développeur »</td><td>Cliquez <b>Ignorer</b>. Ce message est normal pour une extension installée hors Chrome Web Store.</td></tr>
+    </table></div>
+  </div>
+  <p class="warn">Coût : deux traductions simultanées (les deux sens), soit au plus 1 à 4 $ par heure de réunion selon le temps de parole.</p>
+</main>
+</body>
+</html>
