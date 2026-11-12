@@ -183,6 +183,7 @@
         src.connect(micBus().enGain);
         ch.src = src;
       }
+      if (dir === 'listen') syncSink();
       ch.el.play().catch(() => {});
     };
     pc.onconnectionstatechange = () => {
@@ -277,13 +278,23 @@
   }
 
   /** Baisse la voix originale de l'interlocuteur pendant la traduction. */
+  /** La voix française sort sur la même sortie que la visio (casque Bluetooth
+   *  en mode « mains libres » compris), quelle que soit la sortie par défaut. */
+  function syncSink() {
+    const own = channels.listen && channels.listen.el;
+    if (!own || !own.setSinkId) return;
+    const meetEl = [...document.querySelectorAll('audio, video')].find((m) => !m.__ilOwn && m.sinkId);
+    const target = meetEl ? meetEl.sinkId : '';
+    if (own.sinkId !== target) own.setSinkId(target).catch(() => {});
+  }
+
   function duckOriginal(on) {
     clearInterval(volTimer);
     const apply = (v) => document.querySelectorAll('audio, video').forEach((m) => { if (!m.__ilOwn) m.volume = v; });
     if (!on) { apply(1); return; }
     const v = settings ? settings.originalVolume : 0.2;
     apply(v);
-    volTimer = setInterval(() => apply(settings ? settings.originalVolume : 0.2), 1000);
+    volTimer = setInterval(() => { apply(settings ? settings.originalVolume : 0.2); syncSink(); }, 1000);
   }
 
   const label = (m) => ({ auto: 'Auto', listen: 'Écoute', speak: 'Parle', off: 'Arrêt' }[m] || m);
