@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Interprète Live pour Meet — installation</title>
+<title>Interprète Live — installation</title>
 <style>
   :root { --bg:#0b0f14; --panel:#131a22; --line:#243041; --text:#e9eef5; --muted:#8a97a8; --accent:#3fa7ff; --ok:#2bb673; --warn:#ff8a3d; }
   * { box-sizing: border-box; }
@@ -27,12 +27,24 @@
 <body>
 <main>
   <a href="./">← Retour à l'app</a>
-  <h1>Interprète Live dans Google Meet</h1>
-  <p>Une extension Chrome, sans droits administrateur ni pilote. Dans Meet, votre interlocuteur n'entend que la traduction anglaise de votre voix ; vous entendez sa voix traduite en français dans vos écouteurs. Fonctionne aussi avec Teams et Zoom <b>dans le navigateur</b> (pas avec les applications installées).</p>
+  <h1>Interprète Live : Meet, WhatsApp, Teams, Zoom</h1>
+  <p>Une extension Chrome, sans droits administrateur ni pilote. Dans Meet, votre interlocuteur n'entend que la traduction anglaise de votre voix ; vous entendez sa voix traduite en français dans vos écouteurs. </p>
+  <div class="card">
+    <h2>Compatibilité</h2>
+    <div class="scroll"><table>
+      <tr><th>Service</th><th>Adresse à ouvrir dans Chrome</th></tr>
+      <tr><td>Google Meet</td><td><code>meet.google.com</code></td></tr>
+      <tr><td>WhatsApp</td><td><code>web.whatsapp.com</code> — appels depuis le navigateur (si le bouton d'appel n'apparaît pas dans WhatsApp Web, votre compte n'y a pas encore accès)</td></tr>
+      <tr><td>Microsoft Teams</td><td><code>teams.microsoft.com</code> ou <code>teams.live.com</code> — choisissez « Utiliser l'application web » au lieu d'ouvrir l'application</td></tr>
+      <tr><td>Zoom</td><td>Lien de réunion → « Rejoindre depuis votre navigateur » (<code>app.zoom.us</code>)</td></tr>
+    </table></div>
+    <p class="warn">Les applications installées (WhatsApp Desktop, Zoom, Teams) ne sont pas accessibles à une extension : ouvrez l'appel dans Chrome.</p>
+  </div>
+  <p></p>
 
   <div class="card">
     <h2>1. Télécharger</h2>
-    <a class="dl" href="interprete-live-v1.2.1.zip" download>⬇ Télécharger l'extension v1.2.1 (.zip)</a>
+    <a class="dl" href="interprete-live-v1.3.0.zip" download>⬇ Télécharger l'extension v1.3.0 (.zip)</a>
     <p>Dans <b>Téléchargements</b> : clic droit sur <code>interprete-live-extension.zip</code> → <b>Extraire tout…</b> → <b>Extraire</b>. Vous obtenez un dossier <code>interprete-live</code>.</p>
   </div>
 
@@ -69,7 +81,7 @@
     <h2>4. Pendant la réunion Meet</h2>
     <ol>
       <li><b>Mettez vos écouteurs</b> (sinon la voix française repasse dans votre micro).</li>
-      <li>Ouvrez Meet et rejoignez la réunion (si Meet était déjà ouvert avant l'installation : <kbd>F5</kbd>).</li>
+      <li>Ouvrez l'appel dans Chrome (Meet, WhatsApp Web, Teams ou Zoom web). Si la page était déjà ouverte avant l'installation : <kbd>F5</kbd>.</li>
       <li>Cliquez l'icône <b>Interprète Live</b> : la <b>fenêtre de l'application</b> s'ouvre (gros boutons, sous-titres, historique, export). Placez-la à côté de Meet. Un petit panneau reprend aussi les boutons en bas à gauche de Meet.</li>
       <li>Choisissez :
         <div class="scroll"><table>

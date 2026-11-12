@@ -44,8 +44,32 @@ async function connect(session, sdp) {
   return r.text();
 }
 
-chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
-  if (!msg || msg.type === 'evt' || msg.type === 'cmd') return false; // pour la fenêtre application
+/* Cadre (frame) qui porte l'appel, par onglet — conservé si le service worker redémarre */
+async function mediaFrame(tabId) {
+  const k = 'mf_' + tabId;
+  const o = await chrome.storage.session.get(k);
+  return o[k] ?? 0;
+}
+async function sendCmd(tabId, cmd) {
+  const frameId = await mediaFrame(tabId);
+  try { await chrome.tabs.sendMessage(tabId, { type: 'cmd', cmd }, { frameId }); }
+  catch { await chrome.tabs.sendMessage(tabId, { type: 'cmd', cmd }, { frameId: 0 }).catch(() => {}); }
+}
+
+chrome.runtime.onMessage.addListener((msg, sender, reply) => {
+  if (msg && msg.type === 'evt' && sender.tab) {
+    if (msg.evt && msg.evt.type === 'media') chrome.storage.session.set({ ['mf_' + sender.tab.id]: sender.frameId || 0 });
+    // Événement venu d'un sous-cadre : on le relaie au panneau de la page principale
+    else if (sender.frameId) chrome.tabs.sendMessage(sender.tab.id, { type: 'evtRelay', evt: msg.evt }, { frameId: 0 }).catch(() => {});
+    return false;
+  }
+  if (msg && msg.type === 'cmdTab') {
+    const tabId = msg.tabId || (sender.tab && sender.tab.id);
+    if (tabId) sendCmd(tabId, msg.cmd);
+    reply({ ok: true });
+    return false;
+  }
+  if (!msg || msg.type === 'cmd') return false;
   (async () => {
     try {
       if (msg.type === 'settings') {
