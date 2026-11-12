@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Interprète Live</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span id="dot" class="dot"></span>
+      <div class="brand-txt">
+        <h1>Interprète Live</h1>
+        <p id="status" class="status">Recherche de la réunion…</p>
+      </div>
+    </div>
+    <button id="btnSettings" class="icon" title="Réglages">⚙</button>
+  </header>
+
+  <div id="target" class="target">—</div>
+
+  <section class="live">
+    <div class="lbl">Il dit — traduit en français</div>
+    <div id="liveFr" class="fr">—</div>
+    <div class="lbl">Vous dites — envoyé en anglais</div>
+    <div id="liveEn" class="en">—</div>
+  </section>
+
+  <section class="hist">
+    <div class="hist-bar">
+      <span>Historique <span id="count" class="muted">(0)</span></span>
+      <div class="hist-actions">
+        <button id="btnCopy" class="small">Copier</button>
+        <button id="btnExport" class="small">Export .txt</button>
+        <button id="btnClear" class="small danger">Effacer</button>
+      </div>
+    </div>
+    <ol id="history"></ol>
+  </section>
+
+  <nav class="controls">
+    <button class="mode" data-m="auto"><b>Auto</b><span>EN ⇄ FR</span></button>
+    <button class="mode" data-m="listen"><b>Écoute</b><span>EN → FR</span></button>
+    <button class="mode" data-m="speak"><b>Parle</b><span>FR → EN</span></button>
+    <button class="stop" data-m="off">Arrêt — micro normal</button>
+  </nav>
+
+  <div id="noMeet" class="overlay" hidden>
+    <div class="ov-card">
+      <h2>Aucune réunion ouverte</h2>
+      <p>Ouvrez Google Meet (ou Teams / Zoom dans Chrome), puis revenez ici. Si Meet est déjà ouvert, rechargez-le (F5).</p>
+      <button id="btnNewMeet" class="primary">Ouvrir Google Meet</button>
+      <button id="btnRetry" class="small">Réessayer</button>
+    </div>
+  </div>
+<script src="app.js"></script>
+</body>
+</html>

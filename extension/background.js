@@ -45,6 +45,7 @@ async function connect(session, sdp) {
 }
 
 chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
+  if (!msg || msg.type === 'evt' || msg.type === 'cmd') return false; // pour la fenêtre application
   (async () => {
     try {
       if (msg.type === 'settings') {
@@ -62,5 +63,13 @@ chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
   return true; // réponse asynchrone
 });
 
-// Clic sur l'icône de l'extension → page de réglages
-chrome.action.onClicked.addListener(() => chrome.runtime.openOptionsPage());
+// Clic sur l'icône de l'extension → fenêtre « application » (une seule à la fois)
+let appWindowId = null;
+chrome.action.onClicked.addListener(async () => {
+  if (appWindowId !== null) {
+    try { await chrome.windows.update(appWindowId, { focused: true }); return; } catch { appWindowId = null; }
+  }
+  const w = await chrome.windows.create({ url: 'app.html', type: 'popup', width: 460, height: 860 });
+  appWindowId = w.id;
+});
+chrome.windows.onRemoved.addListener((id) => { if (id === appWindowId) appWindowId = null; });

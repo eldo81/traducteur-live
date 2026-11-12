@@ -12,3 +12,15 @@ window.addEventListener('message', (e) => {
     window.postMessage({ __il: 'res', id, res: { ok: false, error: 'Extension mise à jour : rechargez la page.' } }, '*');
   }
 });
+
+/* Événements de la page → fenêtre « application » de l'extension */
+window.addEventListener('message', (e) => {
+  if (e.source !== window || !e.data || e.data.__il !== 'evt') return;
+  try { chrome.runtime.sendMessage({ type: 'evt', evt: e.data.evt }).catch(() => {}); } catch {}
+});
+/* Commandes de la fenêtre « application » → page */
+chrome.runtime.onMessage.addListener((msg, _s, reply) => {
+  if (!msg || msg.type !== 'cmd') return;
+  window.postMessage({ __il: 'cmd', cmd: msg.cmd }, '*');
+  reply({ ok: true });
+});
