@@ -2,7 +2,7 @@
 window.addEventListener('message', (e) => {
   if (e.source !== window || !e.data || e.data.__il !== 'req') return;
   const { id, payload } = e.data;
-  if (!payload || !['settings', 'connect', 'openOptions'].includes(payload.type)) return;
+  if (!payload || !['settings', 'connect', 'openOptions', 'openApp'].includes(payload.type)) return;
   try {
     chrome.runtime.sendMessage(payload, (res) => {
       const err = chrome.runtime.lastError;

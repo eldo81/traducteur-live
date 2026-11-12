@@ -26,3 +26,6 @@ $('test').addEventListener('click', async () => {
     $('msg').textContent = ids.includes(m) ? `✅ Clé valide, « ${m} » disponible.` : `⚠️ Clé valide, mais « ${m} » absent de votre compte.`;
   } catch (e) { $('msg').textContent = '❌ Réseau : ' + e.message; }
 });
+
+$('ver').textContent = 'Version ' + chrome.runtime.getManifest().version;
+$('openApp').addEventListener('click', () => chrome.runtime.sendMessage({ type: 'openApp' }));

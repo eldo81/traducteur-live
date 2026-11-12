@@ -374,7 +374,7 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
           </div>
           <div class="sub"><small>Il dit (traduit en français)</small><div class="fr">—</div></div>
           <div class="sub"><small>Vous dites (envoyé en anglais)</small><div class="en">—</div></div>
-          <div class="foot"><button data-a="copy">Copier la transcription</button><button data-a="opt">Réglages</button></div>
+          <div class="foot"><button data-a="app">⤢ Grande fenêtre</button><button data-a="copy">Copier</button><button data-a="opt">Réglages</button></div>
         </div>
       </div>`;
     document.body.appendChild(host);
@@ -385,6 +385,7 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
     root.querySelector('.h').addEventListener('click', () => ui.panel.classList.toggle('min'));
     root.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.m)));
     root.querySelector('[data-a="opt"]').addEventListener('click', () => ask({ type: 'openOptions' }));
+    root.querySelector('[data-a="app"]').addEventListener('click', () => ask({ type: 'openApp' }));
     root.querySelector('[data-a="copy"]').addEventListener('click', async () => {
       const txt = log.map((l) => `[${l.t}] ${l.dir === 'listen' ? 'EN→FR' : 'FR→EN'} : ${l.text}`).join('\n') || '(vide)';
       try { await navigator.clipboard.writeText(txt); status(mode === 'off' ? '' : 'on', 'Transcription copiée'); } catch { status('err', 'Copie refusée'); }
