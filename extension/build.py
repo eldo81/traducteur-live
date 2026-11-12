@@ -7,7 +7,7 @@ prompts = open(os.path.join(here, 'prompts.js'), encoding='utf-8').read()
 assert '/*@@PROMPTS@@*/' in src
 open(os.path.join(here, 'main.js'), 'w', encoding='utf-8').write(
     '/* FICHIER GÉNÉRÉ par build.py — modifiez main.src.js et prompts.js */\n' + src.replace('/*@@PROMPTS@@*/', prompts))
-files = ['manifest.json', 'background.js', 'bridge.js', 'main.js', 'options.html', 'options.js', 'icon-48.png', 'icon-128.png']
+files = ['manifest.json', 'background.js', 'bridge.js', 'main.js', 'options.html', 'options.js', 'app.html', 'app.css', 'app.js', 'icon-48.png', 'icon-128.png']
 out = os.path.join(here, '..', 'interprete-live-extension.zip')
 with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
     for f in files:

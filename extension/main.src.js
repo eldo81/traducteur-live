@@ -346,19 +346,41 @@
     });
     render();
   }
+  /* ---------------------------------------------------------------
+   * Fenêtre « application » de l'extension : événements sortants et
+   * commandes entrantes (via bridge.js)
+   * ------------------------------------------------------------- */
+  let lastStatus = { state: '', text: 'Arrêté — micro normal' };
+  const live = { listen: '', speak: '' };
+  function emit(evt) { window.postMessage({ __il: 'evt', evt }, '*'); }
+  function snapshot() { return { mode, status: lastStatus, live, log, title: document.title }; }
+  window.addEventListener('message', (e) => {
+    if (e.source !== window || !e.data || e.data.__il !== 'cmd') return;
+    const c = e.data.cmd || {};
+    if (c.type === 'setMode' && ['auto', 'listen', 'speak', 'off'].includes(c.mode)) setMode(c.mode);
+    if (c.type === 'state') emit({ type: 'state', state: snapshot() });
+    if (c.type === 'clearLog') { log.length = 0; emit({ type: 'state', state: snapshot() }); }
+  });
+
   function render() {
+    emit({ type: 'mode', mode });
     if (!ui) return;
     ui.root.querySelectorAll('[data-m]').forEach((b) => b.classList.toggle('a', b.dataset.m === mode));
   }
   function status(state, text) {
+    lastStatus = { state, text };
+    emit({ type: 'status', status: lastStatus });
     if (!ui) return;
     ui.dot.className = 'd' + (state ? ' ' + state : '');
     ui.st.textContent = text;
   }
   function subtitle(dir, text, done) {
+    live[dir] = text;
+    let line = null;
+    if (done) { line = { t: new Date().toLocaleTimeString('fr-FR'), dir, text }; log.push(line); }
+    emit({ type: 'subtitle', dir, text, done, line });
     if (!ui) return;
     (dir === 'listen' ? ui.fr : ui.en).textContent = text;
-    if (done) log.push({ t: new Date().toLocaleTimeString('fr-FR'), dir, text });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildUI);

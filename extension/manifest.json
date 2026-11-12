@@ -1,19 +1,24 @@
 {
   "manifest_version": 3,
   "name": "Interprète Live — Meet, Teams, Zoom",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Interprète simultané anglais ⇄ français dans vos visioconférences : l'interlocuteur n'entend que l'anglais, vous entendez le français.",
   "permissions": [
     "storage"
   ],
   "host_permissions": [
-    "https://api.openai.com/*"
+    "https://api.openai.com/*",
+    "https://meet.google.com/*",
+    "https://teams.microsoft.com/*",
+    "https://teams.live.com/*",
+    "https://app.zoom.us/*",
+    "https://*.zoom.us/wc/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Interprète Live — réglages",
+    "default_title": "Interprète Live — ouvrir",
     "default_icon": {
       "48": "icon-48.png",
       "128": "icon-128.png"
