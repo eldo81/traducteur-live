@@ -1,6 +1,6 @@
 /* Interprète Live — fenêtre « application » : pilote l'onglet de réunion
  * (Meet / Teams / Zoom) où l'extension fait la traduction. */
-const MEETING_URLS = ['https://meet.google.com/*', 'https://teams.microsoft.com/*', 'https://teams.live.com/*', 'https://app.zoom.us/*', 'https://*.zoom.us/wc/*'];
+const MEETING_URLS = ['https://meet.google.com/*', 'https://web.whatsapp.com/*', 'https://teams.microsoft.com/*', 'https://teams.live.com/*', 'https://teams.cloud.microsoft/*', 'https://app.zoom.us/*', 'https://*.zoom.us/*'];
 const $ = (id) => document.getElementById(id);
 let tabId = null;
 let log = [];
@@ -10,7 +10,7 @@ let mode = 'off';
 async function findMeeting() {
   const tabs = await chrome.tabs.query({ url: MEETING_URLS });
   tabs.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
-  const t = tabs.find((x) => /meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}/.test(x.url)) || tabs[0];
+  const t = tabs.find((x) => x.active) || tabs.find((x) => /meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}/.test(x.url)) || tabs[0];
   if (!t) { tabId = null; $('noMeet').hidden = false; setStatus('', 'Aucune réunion ouverte'); return; }
   tabId = t.id;
   $('noMeet').hidden = true;
@@ -20,8 +20,8 @@ async function findMeeting() {
 
 async function cmd(c) {
   if (tabId === null) { await findMeeting(); if (tabId === null) return; }
-  try { await chrome.tabs.sendMessage(tabId, { type: 'cmd', cmd: c }); }
-  catch { setStatus('err', 'Réunion injoignable : rechargez la page Meet (F5).'); }
+  try { await chrome.runtime.sendMessage({ type: 'cmdTab', tabId, cmd: c }); }
+  catch { setStatus('err', 'Réunion injoignable : rechargez la page de l’appel (F5).'); }
 }
 
 function setStatus(state, text) {

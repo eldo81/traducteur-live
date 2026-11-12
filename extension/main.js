@@ -67,6 +67,7 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
   const md = navigator.mediaDevices;
   if (!NativePC || !md || !md.getUserMedia) return;
   const nativeGUM = md.getUserMedia.bind(md);
+  const TOP = window === window.top;      // le panneau ne s'affiche que dans la page principale
 
   /* ---------------------------------------------------------------
    * Pont vers l'extension (clé API et requêtes OpenAI côté extension)
@@ -118,19 +119,44 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
     mic.enGain.gain.value = translate ? 1 : 0;
   }
 
-  /* Son de l'appel : toutes les pistes audio reçues, mixées */
-  const call = { dest: null };
+  /* Son de l'appel : toutes les pistes audio reçues, mixées.
+   * Deux origines : 'rtc' (pistes WebRTC / lecteurs audio — Meet, Teams,
+   * WhatsApp) et 'wa' (moteur audio WebAudio de la page — Zoom). Si des
+   * pistes 'rtc' existent, la capture 'wa' est coupée pour éviter le doublon. */
+  const call = { dest: null, rtcGain: null, waGain: null, rtc: 0 };
   const seen = new WeakSet();
+  const localTracks = new WeakSet();       // vos pistes micro : jamais captées comme « son de l'appel »
   function callBus() {
-    if (!call.dest) call.dest = audio().createMediaStreamDestination();
+    if (!call.dest) {
+      const c = audio();
+      call.dest = c.createMediaStreamDestination();
+      call.rtcGain = c.createGain(); call.waGain = c.createGain();
+      call.rtcGain.connect(call.dest); call.waGain.connect(call.dest);
+    }
     return call;
   }
-  function captureRemote(track) {
-    if (!track || track.kind !== 'audio' || seen.has(track)) return;
+  function captureRemote(track, kind) {
+    if (!track || track.kind !== 'audio' || seen.has(track) || localTracks.has(track)) return;
     seen.add(track);
+    callBus();
     const src = audio().createMediaStreamSource(new MediaStream([track]));
-    src.connect(callBus().dest);
-    track.addEventListener('ended', () => { try { src.disconnect(); } catch {} });
+    src.connect(kind === 'wa' ? call.waGain : call.rtcGain);
+    if (kind !== 'wa') call.rtc++;
+    call.waGain.gain.value = call.rtc > 0 ? 0 : 1;
+    track.addEventListener('ended', () => {
+      try { src.disconnect(); } catch {}
+      if (kind !== 'wa') { call.rtc = Math.max(0, call.rtc - 1); call.waGain.gain.value = call.rtc > 0 ? 0 : 1; }
+    });
+    announceMedia();
+  }
+
+  /* Cette page (ou ce cadre) porte l'appel : on le signale à l'extension
+   * pour que les commandes de la fenêtre application arrivent ici. */
+  let announced = false;
+  function announceMedia() {
+    if (announced) return;
+    announced = true;
+    window.postMessage({ __il: 'evt', evt: { type: 'media' } }, '*');
   }
 
   /* ---------------------------------------------------------------
@@ -141,14 +167,17 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
     const real = constraints && constraints.audio ? stream.getAudioTracks()[0] : null;
     if (!real) return stream;
     micBus();
+    localTracks.add(real);
     if (mic.realSrc) { try { mic.realSrc.disconnect(); } catch {} }
     mic.realTrack = real;
+    announceMedia();
     mic.realSrc = audio().createMediaStreamSource(new MediaStream([real]));
     mic.realSrc.connect(mic.realGain);
     if (channels.speak) channels.speak.swapInput(real);
 
     // Piste rendue à la visio : copie du proxy qui se comporte comme le vrai micro
     const proxy = mic.dest.stream.getAudioTracks()[0].clone();
+    localTracks.add(proxy);
     Object.defineProperty(proxy, 'label', { get: () => real.label });
     proxy.getSettings = () => real.getSettings();
     proxy.getCapabilities = () => (real.getCapabilities ? real.getCapabilities() : {});
@@ -168,6 +197,41 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
   Object.setPrototypeOf(PatchedPC, NativePC);
   window.RTCPeerConnection = PatchedPC;
   if (window.webkitRTCPeerConnection) window.webkitRTCPeerConnection = PatchedPC;
+
+  /* Lecteurs audio : toute piste distante branchée sur <audio>/<video> */
+  const srcDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'srcObject');
+  if (srcDesc && srcDesc.set) {
+    Object.defineProperty(HTMLMediaElement.prototype, 'srcObject', {
+      configurable: true, enumerable: srcDesc.enumerable,
+      get() { return srcDesc.get.call(this); },
+      set(v) {
+        srcDesc.set.call(this, v);
+        try {
+          if (v && !this.__ilOwn && typeof v.getAudioTracks === 'function') v.getAudioTracks().forEach((t) => captureRemote(t, 'rtc'));
+        } catch {}
+      },
+    });
+  }
+
+  /* Moteur audio de la page (Zoom web…) : tout ce qui part vers les haut-parleurs */
+  const nativeConnect = AudioNode.prototype.connect;
+  const taps = new WeakMap();
+  AudioNode.prototype.connect = function (target, ...rest) {
+    const r = nativeConnect.call(this, target, ...rest);
+    try {
+      const c = this.context;
+      if (target instanceof AudioDestinationNode && c !== ctx && c instanceof AudioContext) {
+        let tap = taps.get(c);
+        if (!tap) {
+          tap = c.createMediaStreamDestination();
+          taps.set(c, tap);
+          captureRemote(tap.stream.getAudioTracks()[0], 'wa');
+        }
+        nativeConnect.call(this, tap);
+      }
+    } catch {}
+    return r;
+  };
 
   /* ---------------------------------------------------------------
    * Sessions OpenAI Realtime : 'listen' (appel → FR) et 'speak' (vous → EN)
@@ -350,7 +414,7 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
   let ui = null;
   const log = [];
   function buildUI() {
-    if (ui || !document.body) return;
+    if (ui || !document.body || !TOP) return;
     const host = document.createElement('div');
     host.id = 'interprete-live';
     host.style.cssText = 'position:fixed;left:16px;bottom:96px;z-index:2147483647;';
@@ -394,7 +458,8 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
       fr: root.querySelector('.fr'), en: root.querySelector('.en'), panel: root.querySelector('.p'),
     };
     root.querySelector('.h').addEventListener('click', () => ui.panel.classList.toggle('min'));
-    root.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.m)));
+    // Les boutons passent par l'extension : la commande atteint le cadre qui porte l'appel
+    root.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => ask({ type: 'cmdTab', cmd: { type: 'setMode', mode: b.dataset.m } })));
     root.querySelector('[data-a="opt"]').addEventListener('click', () => ask({ type: 'openOptions' }));
     root.querySelector('[data-a="app"]').addEventListener('click', () => ask({ type: 'openApp' }));
     root.querySelector('[data-a="copy"]').addEventListener('click', async () => {
@@ -419,30 +484,39 @@ VOICE & ACCENT: You are an English-speaking West African businessman (Nigeria / 
     if (c.type === 'clearLog') { log.length = 0; emit({ type: 'state', state: snapshot() }); }
   });
 
+  /* Mise à jour du panneau (aussi quand l'appel tourne dans un sous-cadre) */
+  const uiMode = (m) => { if (ui) ui.root.querySelectorAll('[data-m]').forEach((b) => b.classList.toggle('a', b.dataset.m === m)); };
+  const uiStatus = (st) => { if (ui) { ui.dot.className = 'd' + (st.state ? ' ' + st.state : ''); ui.st.textContent = st.text; } };
+  const uiSub = (dir, text) => { if (ui) (dir === 'listen' ? ui.fr : ui.en).textContent = text; };
+  window.addEventListener('message', (e) => {
+    if (e.source !== window || !e.data || e.data.__il !== 'evtIn') return;
+    const v = e.data.evt || {};
+    if (v.type === 'mode') uiMode(v.mode);
+    if (v.type === 'status') uiStatus(v.status);
+    if (v.type === 'subtitle') uiSub(v.dir, v.text);
+    if (v.type === 'state') { uiMode(v.state.mode); uiStatus(v.state.status); }
+  });
+
   function render() {
     emit({ type: 'mode', mode });
-    if (!ui) return;
-    ui.root.querySelectorAll('[data-m]').forEach((b) => b.classList.toggle('a', b.dataset.m === mode));
+    uiMode(mode);
   }
   function status(state, text) {
     lastStatus = { state, text };
     emit({ type: 'status', status: lastStatus });
-    if (!ui) return;
-    ui.dot.className = 'd' + (state ? ' ' + state : '');
-    ui.st.textContent = text;
+    uiStatus(lastStatus);
   }
   function subtitle(dir, text, done) {
     live[dir] = text;
     let line = null;
     if (done) { line = { t: new Date().toLocaleTimeString('fr-FR'), dir, text }; log.push(line); }
     emit({ type: 'subtitle', dir, text, done, line });
-    if (!ui) return;
-    (dir === 'listen' ? ui.fr : ui.en).textContent = text;
+    uiSub(dir, text);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildUI);
   else buildUI();
 
   // Accès pour les tests automatisés
-  window.__interpreteLiveDebug = { setMode, channels, mic, call, get mode() { return mode; } };
+  window.__interpreteLiveDebug = { setMode, channels, mic, call, get mode() { return mode; }, get announced() { return announced; } };
 })();

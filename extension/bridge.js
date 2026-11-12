@@ -2,7 +2,7 @@
 window.addEventListener('message', (e) => {
   if (e.source !== window || !e.data || e.data.__il !== 'req') return;
   const { id, payload } = e.data;
-  if (!payload || !['settings', 'connect', 'openOptions', 'openApp'].includes(payload.type)) return;
+  if (!payload || !['settings', 'connect', 'openOptions', 'openApp', 'cmdTab'].includes(payload.type)) return;
   try {
     chrome.runtime.sendMessage(payload, (res) => {
       const err = chrome.runtime.lastError;
@@ -20,7 +20,7 @@ window.addEventListener('message', (e) => {
 });
 /* Commandes de la fenêtre « application » → page */
 chrome.runtime.onMessage.addListener((msg, _s, reply) => {
-  if (!msg || msg.type !== 'cmd') return;
-  window.postMessage({ __il: 'cmd', cmd: msg.cmd }, '*');
-  reply({ ok: true });
+  if (!msg) return;
+  if (msg.type === 'cmd') { window.postMessage({ __il: 'cmd', cmd: msg.cmd }, '*'); reply({ ok: true }); }
+  if (msg.type === 'evtRelay') { window.postMessage({ __il: 'evtIn', evt: msg.evt }, '*'); reply({ ok: true }); }
 });
