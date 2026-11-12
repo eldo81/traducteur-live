@@ -54,6 +54,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
         reply({ ok: true, hasKey: !!apiKey, settings: { ...DEFAULTS, ...rest } });
       } else if (msg.type === 'connect') {
         reply({ ok: true, sdp: await connect(msg.session, msg.sdp) });
+      } else if (msg.type === 'openApp') {
+        await openApp();
+        reply({ ok: true });
       } else if (msg.type === 'openOptions') {
         chrome.runtime.openOptionsPage();
         reply({ ok: true });
@@ -65,11 +68,12 @@ chrome.runtime.onMessage.addListener((msg, _sender, reply) => {
 
 // Clic sur l'icône de l'extension → fenêtre « application » (une seule à la fois)
 let appWindowId = null;
-chrome.action.onClicked.addListener(async () => {
+async function openApp() {
   if (appWindowId !== null) {
     try { await chrome.windows.update(appWindowId, { focused: true }); return; } catch { appWindowId = null; }
   }
   const w = await chrome.windows.create({ url: 'app.html', type: 'popup', width: 460, height: 860 });
   appWindowId = w.id;
-});
+}
+chrome.action.onClicked.addListener(openApp);
 chrome.windows.onRemoved.addListener((id) => { if (id === appWindowId) appWindowId = null; });
