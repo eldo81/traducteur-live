@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Interprète Live — Meet, Teams, Zoom",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Interprète simultané anglais ⇄ français dans vos visioconférences : l'interlocuteur n'entend que l'anglais, vous entendez le français.",
   "permissions": [
     "storage"
