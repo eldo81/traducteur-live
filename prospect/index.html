@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="Prospection B2B par mots-clés : entreprises, contacts, décideurs, messages prêts à envoyer.">
+  <title>Radar B2B</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="icons/icon.svg" alt="" width="28" height="28"> Radar B2B</div>
+    <div class="top-stats" id="topStats"></div>
+  </header>
+
+  <main>
+    <!-- ============ RECHERCHER ============ -->
+    <section class="view active" id="view-search">
+      <form id="searchForm" class="card form">
+        <label>Mots-clés
+          <input id="kw" type="text" required placeholder="ex. importateur riz, grossiste ciment, fabricant emballage" autocomplete="off">
+        </label>
+        <small class="hint">Séparez plusieurs termes par une virgule : chaque terme est cherché.</small>
+        <label>Zone
+          <input id="zone" type="text" placeholder="ex. Sénégal, Dakar, Belgique, Afrique de l'Ouest" list="zones" autocomplete="off">
+          <datalist id="zones">
+            <option value="Sénégal"><option value="Dakar"><option value="Côte d'Ivoire"><option value="Mali">
+            <option value="Guinée"><option value="Cameroun"><option value="Maroc"><option value="Afrique de l'Ouest">
+            <option value="France"><option value="Belgique"><option value="Pays-Bas"><option value="Luxembourg">
+            <option value="Benelux"><option value="Turquie"><option value="Chine"><option value="Émirats arabes unis">
+          </datalist>
+        </label>
+        <div class="row">
+          <label>Cible
+            <select id="target">
+              <option value="all">Tous types</option>
+              <option value="buyers">Acheteurs / importateurs</option>
+              <option value="suppliers">Fournisseurs / fabricants</option>
+              <option value="distributors">Distributeurs / grossistes</option>
+              <option value="partners">Partenaires / agents</option>
+              <option value="public">Donneurs d'ordre publics / ONG</option>
+            </select>
+          </label>
+          <label>Nombre
+            <select id="count">
+              <option>10</option><option selected>20</option><option>30</option>
+            </select>
+          </label>
+        </div>
+        <label>Source
+          <select id="source">
+            <option value="ai">IA + recherche web (OpenAI, payant, le plus complet)</option>
+            <option value="osm">OpenStreetMap (gratuit, commerces et sites physiques)</option>
+          </select>
+        </label>
+        <label class="check"><input id="saveWatch" type="checkbox" checked> Enregistrer comme veille (relance en 1 tap)</label>
+        <button class="btn primary big" id="goBtn" type="submit">Lancer la prospection</button>
+      </form>
+
+      <div class="card" id="quick">
+        <h3>Recherche manuelle complémentaire</h3>
+        <p class="muted">Liens prêts avec vos mots-clés :</p>
+        <div class="chips" id="quickLinks"></div>
+      </div>
+
+      <div id="progress" class="card progress hidden">
+        <div class="spinner"></div>
+        <div><strong id="progressTitle">Recherche en cours…</strong><div class="muted" id="progressSub"></div></div>
+      </div>
+
+      <div id="results"></div>
+    </section>
+
+    <!-- ============ LEADS ============ -->
+    <section class="view" id="view-leads">
+      <div class="card toolbar">
+        <input id="leadFilter" type="search" placeholder="Filtrer (nom, ville, activité…)">
+        <div class="row">
+          <select id="statusFilter"></select>
+          <select id="sortBy">
+            <option value="recent">Plus récents</option>
+            <option value="score">Meilleur score</option>
+            <option value="name">Nom A→Z</option>
+          </select>
+        </div>
+        <div class="row">
+          <label class="check"><input id="favOnly" type="checkbox"> Favoris</label>
+          <label class="check"><input id="contactOnly" type="checkbox"> Avec contact</label>
+        </div>
+        <div class="row">
+          <button class="btn" id="exportCsv" type="button">Exporter CSV</button>
+          <button class="btn" id="shareCsv" type="button">Partager</button>
+        </div>
+      </div>
+      <div id="leadList"></div>
+    </section>
+
+    <!-- ============ VEILLES ============ -->
+    <section class="view" id="view-watch">
+      <div class="card">
+        <h3>Veilles enregistrées</h3>
+        <p class="muted">Chaque relance exclut les entreprises déjà trouvées : seuls les nouveaux leads s'ajoutent.</p>
+        <button class="btn primary" id="runAll" type="button">Relancer toutes les veilles</button>
+      </div>
+      <div id="watchList"></div>
+    </section>
+
+    <!-- ============ RÉGLAGES ============ -->
+    <section class="view" id="view-settings">
+      <form class="card form" id="settingsForm">
+        <h3>Moteur IA (OpenAI)</h3>
+        <label>Clé API
+          <input id="apiKey" type="password" placeholder="sk-proj-…" autocomplete="off">
+        </label>
+        <small class="hint" id="keyHint"></small>
+        <label>Modèle
+          <select id="model">
+            <option value="gpt-5-mini">gpt-5-mini (recommandé, bon rapport qualité/prix)</option>
+            <option value="gpt-5">gpt-5 (plus précis, plus cher)</option>
+            <option value="gpt-4.1-mini">gpt-4.1-mini (rapide, économique)</option>
+            <option value="custom">Autre…</option>
+          </select>
+        </label>
+        <input id="customModel" type="text" class="hidden" placeholder="nom exact du modèle">
+        <button class="btn" type="button" id="testKey">Tester la clé</button>
+
+        <h3>Votre profil (pour les messages)</h3>
+        <label>Nom de l'expéditeur <input id="pName" type="text" autocomplete="name"></label>
+        <label>Société <input id="pCompany" type="text"></label>
+        <label>Fonction <input id="pRole" type="text" placeholder="ex. Directeur commercial"></label>
+        <label>Votre offre en une phrase
+          <textarea id="pOffer" rows="3" placeholder="ex. Sourcing et import de matériaux de construction Turquie → Afrique de l'Ouest, CIF Dakar, paiement LC."></textarea>
+        </label>
+        <label>Téléphone / WhatsApp <input id="pPhone" type="tel"></label>
+        <label>E-mail <input id="pEmail" type="email"></label>
+        <label>Langue des messages
+          <select id="pLang">
+            <option value="auto">Auto (selon le pays du lead)</option>
+            <option value="fr">Français</option>
+            <option value="en">Anglais</option>
+          </select>
+        </label>
+        <button class="btn primary" type="submit">Enregistrer</button>
+      </form>
+
+      <div class="card form">
+        <h3>Données</h3>
+        <p class="muted">Tout reste sur ce téléphone. Sauvegardez régulièrement.</p>
+        <div class="row">
+          <button class="btn" id="backup" type="button">Sauvegarde JSON</button>
+          <label class="btn file">Restaurer<input id="restore" type="file" accept="application/json" hidden></label>
+        </div>
+        <button class="btn danger" id="wipe" type="button">Tout effacer</button>
+      </div>
+      <p class="muted center">Radar B2B v1.0.0</p>
+    </section>
+  </main>
+
+  <nav class="tabs">
+    <button data-view="search" class="active" type="button"><span>⌕</span>Rechercher</button>
+    <button data-view="leads" type="button"><span>☰</span>Leads <b id="leadCount"></b></button>
+    <button data-view="watch" type="button"><span>◎</span>Veilles</button>
+    <button data-view="settings" type="button"><span>⚙</span>Réglages</button>
+  </nav>
+
+  <dialog id="msgDialog">
+    <form method="dialog" class="dlg">
+      <h3 id="msgTitle">Message</h3>
+      <div id="msgBody"></div>
+      <div class="row"><button class="btn" value="close">Fermer</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
