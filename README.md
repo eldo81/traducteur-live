@@ -164,23 +164,6 @@ Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuelleme
 
 ---
 
-## Radar B2B — application de prospection B2B (`/prospect/`)
+## Radar B2B
 
-Deuxième app du dépôt, indépendante du traducteur. Vous tapez des **mots-clés** + une **zone**, l'app trouve des entreprises cibles avec coordonnées, les range dans un pipeline et rédige vos messages.
-
-**URL** : `https://eldo81.github.io/traducteur-live/prospect/` → Chrome Android → menu ⋮ → **Installer l'application**.
-
-| Onglet | Fonction |
-|---|---|
-| **Rechercher** | Mots-clés (plusieurs séparés par virgule), zone, cible (acheteurs, fournisseurs, distributeurs, partenaires, donneurs d'ordre publics), 10/20/30 résultats. Liens directs Google Maps, LinkedIn, Kompass, Europages, Go Africa Online, Alibaba. |
-| **Leads** | Fiches avec score 0-100, décideur, e-mail, téléphone. Boutons Appeler, WhatsApp, E-mail, Message IA (e-mail + WhatsApp + relance J+4), LinkedIn, source. Statuts : Nouveau → Contacté → A répondu → RDV/devis → Client / Perdu. Favoris, notes, filtres, export CSV (Excel, séparateur `;`). |
-| **Veilles** | Recherches enregistrées, relance en 1 tap : les entreprises déjà connues sont exclues, seuls les nouveaux leads s'ajoutent. |
-| **Réglages** | Clé OpenAI (reprise automatiquement du Traducteur si déjà saisie), modèle, profil expéditeur et offre (utilisés pour les messages), sauvegarde/restauration JSON. |
-
-**Sources** :
-- **IA + recherche web** : OpenAI Responses API avec l'outil `web_search`. Consigne stricte : aucun contact inventé, URL source obligatoire. 30 à 120 s par recherche. Coût indicatif avec `gpt-5-mini` : quelques centimes par recherche (à vérifier sur la page Pricing d'OpenAI).
-- **OpenStreetMap** : gratuit, sans clé ; couvre surtout les établissements physiques (boutiques, usines, entrepôts), rarement les e-mails.
-
-**Limites** : données stockées sur le téléphone uniquement (exportez le CSV ou la sauvegarde JSON). Vérifiez toujours un contact via le lien « Source » avant un envoi important. Pas de scraping LinkedIn (interdit par leurs CGU) : l'app ouvre la recherche LinkedIn pré-remplie.
-
-**APK installable / Play Store** : sur pwabuilder.com, collez l'URL ci-dessus → *Package for stores* → Android. Vous obtenez un APK/AAB signé qui enveloppe la PWA (Trusted Web Activity).
+L'app de prospection B2B a son propre dépôt et sa propre adresse : **https://eldo81.github.io/radar-b2b/** (dépôt `eldo81/radar-b2b`). L'ancienne adresse `traducteur-live/prospect/` redirige vers elle.
