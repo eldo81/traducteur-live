@@ -1,0 +1,32 @@
+{
+  "title": "Démo : catalogue de livres (site d'entraînement)",
+  "category": "Démarrage",
+  "description": "books.toscrape.com est un site créé pour s'entraîner au scraping. Liste, pagination « next », pages de détail. Lancez-le pour vérifier que tout fonctionne chez vous.",
+  "task": {
+    "name": "Démo — livres (toscrape)",
+    "startUrls": ["https://books.toscrape.com/"],
+    "extract": {
+      "mode": "list",
+      "listSelector": "article.product_pod",
+      "fields": [
+        { "name": "titre", "selector": "h3 > a", "attr": "title" },
+        { "name": "prix", "selector": "p.price_color", "attr": "text", "transform": "number" },
+        { "name": "note", "selector": "p.star-rating", "attr": "class", "regex": "star-rating\\s+(\\w+)" },
+        { "name": "stock", "selector": "p.instock", "attr": "text" },
+        { "name": "lien", "selector": "h3 > a", "attr": "href" }
+      ]
+    },
+    "pagination": { "type": "next", "selector": "li.next > a", "maxPages": 3 },
+    "detail": {
+      "enabled": true, "linkField": "lien", "mode": "single", "concurrency": 3,
+      "fields": [
+        { "name": "upc", "selector": "table.table tr:nth-of-type(1) td", "attr": "text" },
+        { "name": "categorie", "selector": "ul.breadcrumb li:nth-of-type(3) a", "attr": "text" }
+      ]
+    },
+    "dedupKey": ["lien"],
+    "incremental": true,
+    "browser": { "respectRobots": true, "blockResources": true, "delayMs": [300, 800] },
+    "outputs": { "onlyNew": true }
+  }
+}

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Poulpe — extraction web</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">🐙</span> Poulpe <small>extraction web</small></div>
+  <nav>
+    <button data-tab="tasks" class="active">Tâches</button>
+    <button data-tab="editor">Éditeur</button>
+    <button data-tab="templates">Modèles</button>
+    <button data-tab="data">Données</button>
+    <button data-tab="help">Aide</button>
+  </nav>
+  <div id="status" class="status"></div>
+</header>
+
+<main>
+  <!-- ============================================================ TÂCHES -->
+  <section id="tab-tasks" class="tab active">
+    <div class="bar">
+      <h2>Tâches</h2>
+      <div class="spacer"></div>
+      <button class="primary" id="btn-new">+ Nouvelle tâche</button>
+      <label class="btn">Importer .json<input type="file" id="import-file" accept=".json" hidden></label>
+    </div>
+    <table class="grid" id="tasks-table">
+      <thead><tr><th>Tâche</th><th>Source</th><th>Planification</th><th>Dernière exécution</th><th>Lignes</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="empty" id="tasks-empty" hidden>Aucune tâche. Créez-en une ou partez d'un <a href="#" data-goto="templates">modèle</a>.</p>
+    <div id="run-panel" class="card" hidden>
+      <div class="bar"><h3 id="run-title">Exécution</h3><div class="spacer"></div><button id="run-stop" class="danger small">Arrêter</button><button id="run-close" class="small">Fermer</button></div>
+      <pre id="run-log" class="log"></pre>
+    </div>
+  </section>
+
+  <!-- ============================================================ ÉDITEUR -->
+  <section id="tab-editor" class="tab">
+    <div class="bar editor-bar">
+      <input id="t-name" placeholder="Nom de la tâche" class="name">
+      <input id="t-url" placeholder="https://… (URL de départ)" class="url">
+      <button id="btn-load" class="primary">Charger la page</button>
+      <button id="btn-save">Enregistrer</button>
+      <button id="btn-test">Tester (2 pages)</button>
+    </div>
+    <div class="editor">
+      <div class="viewer">
+        <div class="pick-modes" id="pick-modes">
+          <span>Clic dans la page =</span>
+          <button data-mode="field" class="active">Ajouter un champ</button>
+          <button data-mode="list">Choisir le bloc répété</button>
+          <button data-mode="next">Bouton « suivant »</button>
+          <button data-mode="action">Élément à cliquer avant</button>
+          <button data-mode="off">Désactivé</button>
+          <span class="spacer"></span>
+          <span id="item-count" class="pill"></span>
+        </div>
+        <div class="frame-wrap">
+          <iframe id="frame" title="Aperçu de la page"></iframe>
+          <div id="frame-empty" class="frame-empty">
+            <p>Collez une URL puis <b>Charger la page</b>.</p>
+            <p>Ensuite : <b>Détection auto</b>, ou cliquez sur les éléments à extraire (titre, prix, date, lien…). Poulpe généralise à tous les blocs similaires.</p>
+          </div>
+          <div id="frame-loading" class="frame-loading" hidden>Chargement de la page dans le navigateur…</div>
+        </div>
+        <div class="preview card">
+          <div class="bar"><h3>Aperçu des données</h3><span id="preview-info" class="muted"></span><div class="spacer"></div><button id="btn-preview" class="small">Actualiser l'aperçu</button></div>
+          <div class="table-scroll"><table class="grid compact" id="preview-table"></table></div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <details open>
+          <summary>1. Détection & assistant IA</summary>
+          <button id="btn-detect" class="block">Détection automatique des listes</button>
+          <div id="detect-results"></div>
+          <label>Décrivez ce que vous voulez (assistant IA)</label>
+          <textarea id="ai-goal" rows="3" placeholder="Ex. : la liste des appels d'offres avec titre, organisme, pays, date limite et lien"></textarea>
+          <button id="btn-suggest" class="block">Configurer avec l'IA</button>
+          <p class="muted small" id="ai-explain"></p>
+        </details>
+
+        <details open>
+          <summary>2. Extraction</summary>
+          <label>Mode</label>
+          <select data-bind="extract.mode">
+            <option value="list">Liste (blocs répétés)</option>
+            <option value="single">Page unique (une fiche)</option>
+            <option value="ai">IA sans sélecteur (Claude lit la page)</option>
+          </select>
+          <div data-show="extract.mode=list">
+            <label>Bloc répété (sélecteur CSS)</label>
+            <input data-bind="extract.listSelector" placeholder="cliquez « Choisir le bloc répété »">
+          </div>
+          <div data-show="extract.mode!=ai">
+            <label>Champs</label>
+            <div id="fields-list" class="rows"></div>
+            <button id="btn-add-field" class="small">+ champ manuel</button>
+          </div>
+          <div data-show="extract.mode=ai">
+            <label>Consigne pour l'IA</label>
+            <textarea data-bind="extract.ai.instructions" rows="3" placeholder="Extrais chaque appel d'offres de la page"></textarea>
+            <label>Colonnes (une par ligne : nom | type | description)</label>
+            <textarea data-bind-lines="extract.ai.fields" rows="5" placeholder="titre | text | Intitulé de l'avis&#10;date_limite | date | Date limite de dépôt&#10;budget | number | Montant estimé"></textarea>
+          </div>
+        </details>
+
+        <details>
+          <summary>3. Pagination</summary>
+          <select data-bind="pagination.type">
+            <option value="none">Aucune</option>
+            <option value="next">Bouton « page suivante »</option>
+            <option value="scroll">Défilement infini</option>
+            <option value="loadMore">Bouton « charger plus »</option>
+            <option value="url">URL numérotée ({page})</option>
+          </select>
+          <div data-show="pagination.type=next|loadMore">
+            <label>Sélecteur du bouton</label>
+            <input data-bind="pagination.selector" placeholder="mode « Bouton suivant » puis clic">
+          </div>
+          <div data-show="pagination.type=url">
+            <label>Gabarit d'URL</label>
+            <input data-bind="pagination.urlTemplate" placeholder="https://site.com/liste?page={page}">
+            <div class="two"><div><label>De</label><input type="number" data-bind="pagination.from" data-num></div><div><label>À</label><input type="number" data-bind="pagination.to" data-num></div></div>
+          </div>
+          <label>Pages max</label>
+          <input type="number" data-bind="pagination.maxPages" data-num placeholder="10">
+          <label>URL de départ supplémentaires (une par ligne)</label>
+          <textarea id="extra-urls" rows="3" placeholder="https://…"></textarea>
+        </details>
+
+        <details>
+          <summary>4. Actions avant extraction</summary>
+          <p class="muted small">Cookies, recherche, filtres, connexion. Mots de passe : <code>${ENV:NOM_VARIABLE}</code>, jamais en clair.</p>
+          <div id="actions-list" class="rows"></div>
+          <button id="btn-add-action" class="small">+ action</button>
+          <button id="btn-replay" class="small">Rejouer dans l'aperçu</button>
+        </details>
+
+        <details>
+          <summary>5. Pages de détail</summary>
+          <label class="check"><input type="checkbox" data-bind="detail.enabled"> Ouvrir chaque lien et compléter la ligne</label>
+          <div data-show="detail.enabled=true">
+            <label>Colonne qui contient le lien</label>
+            <input data-bind="detail.linkField" placeholder="lien">
+            <label>Mode</label>
+            <select data-bind="detail.mode"><option value="single">Sélecteurs</option><option value="ai">IA</option></select>
+            <div data-show="detail.mode!=ai">
+              <label>Champs de la fiche (nom | sélecteur | attribut)</label>
+              <textarea data-bind-lines="detail.fields" data-line-kind="sel" rows="4" placeholder="description | .notice-body | text&#10;pdf | a.download | href"></textarea>
+              <button id="btn-open-detail" class="small">Ouvrir la 1re fiche dans l'aperçu</button>
+            </div>
+            <div data-show="detail.mode=ai">
+              <label>Consigne</label>
+              <textarea data-bind="detail.ai.instructions" rows="2"></textarea>
+              <label>Colonnes (nom | type | description)</label>
+              <textarea data-bind-lines="detail.ai.fields" rows="4"></textarea>
+            </div>
+            <label>Pages en parallèle</label>
+            <input type="number" data-bind="detail.concurrency" data-num placeholder="2">
+          </div>
+        </details>
+
+        <details>
+          <summary>6. Filtres, doublons, enrichissement IA</summary>
+          <label>Filtres (champ | opérateur | valeur)</label>
+          <textarea data-bind-lines="filters" data-line-kind="filter" rows="3" placeholder="pays | containsAny | Senegal,Sénégal,Mali&#10;date_limite | after | today"></textarea>
+          <p class="muted small">Opérateurs : contains, notContains, containsAny, equals, regex, notRegex, gt, lt, notEmpty, after, before (dates : today, today+7…).</p>
+          <label>Clé anti-doublon (colonnes, séparées par des virgules)</label>
+          <input id="dedup" placeholder="lien">
+          <label class="check"><input type="checkbox" data-bind="incremental" data-default="true"> Cumuler les exécutions (seules les nouvelles lignes sont signalées)</label>
+          <hr>
+          <label class="check"><input type="checkbox" data-bind="enrich.enabled"> Enrichir chaque ligne avec l'IA</label>
+          <div data-show="enrich.enabled=true">
+            <label>Consigne</label>
+            <textarea data-bind="enrich.prompt" rows="3" placeholder="Évalue si l'appel d'offres est accessible à un négociant import-export basé à Dakar"></textarea>
+            <label>Colonnes ajoutées (nom | type | description)</label>
+            <textarea data-bind-lines="enrich.fields" rows="3" placeholder="pertinent | boolean | true si accessible&#10;raison | text | Justification en 1 phrase"></textarea>
+            <label>Filtres après IA</label>
+            <textarea data-bind-lines="postFilters" data-line-kind="filter" rows="2" placeholder="pertinent | equals | true"></textarea>
+          </div>
+        </details>
+
+        <details>
+          <summary>7. Planification & envoi</summary>
+          <label class="check"><input type="checkbox" data-bind="schedule.enabled"> Exécuter automatiquement</label>
+          <div class="two">
+            <div><label>Cron</label><input data-bind="schedule.cron" placeholder="0 7 * * 1-5"></div>
+            <div><label>Fuseau</label><input data-bind="schedule.timezone" placeholder="Africa/Dakar"></div>
+          </div>
+          <div class="presets" id="cron-presets">
+            <button data-cron="0 7 * * *" class="small">Chaque jour 7h</button>
+            <button data-cron="0 7 * * 1-5" class="small">Jours ouvrés 7h</button>
+            <button data-cron="0 */4 * * *" class="small">Toutes les 4 h</button>
+            <button data-cron="0 8 * * 1" class="small">Lundi 8h</button>
+          </div>
+          <label>Webhook (n8n, Make, Zapier, Apps Script)</label>
+          <input data-bind="outputs.webhook.url" placeholder="https://n8n…/webhook/poulpe">
+          <label class="check"><input type="checkbox" data-bind="outputs.onlyNew" data-default="true"> N'envoyer que les nouvelles lignes</label>
+          <label>Dossier d'export automatique (CSV)</label>
+          <input data-bind="outputs.folder" placeholder="/home/moi/exports">
+          <label class="check"><input type="checkbox" data-bind="outputs.xlsx"> Écrire aussi un .xlsx</label>
+        </details>
+
+        <details>
+          <summary>8. Navigateur</summary>
+          <label class="check"><input type="checkbox" data-bind="browser.respectRobots" data-default="true"> Respecter robots.txt</label>
+          <label class="check"><input type="checkbox" data-bind="browser.blockResources" data-default="true"> Bloquer images et polices (plus rapide)</label>
+          <label class="check"><input type="checkbox" data-bind="saveSession"> Garder la session (cookies, connexion)</label>
+          <label>Attendre l'élément (sélecteur)</label>
+          <input data-bind="browser.waitForSelector">
+          <div class="two">
+            <div><label>Pause min (ms)</label><input type="number" id="delay-min" placeholder="800"></div>
+            <div><label>Pause max (ms)</label><input type="number" id="delay-max" placeholder="2000"></div>
+          </div>
+          <label>Proxys (un par ligne, http://user:pass@hôte:port)</label>
+          <textarea id="proxies" rows="2"></textarea>
+          <label>User-Agent</label>
+          <input data-bind="browser.userAgent" placeholder="(défaut : Chrome récent)">
+        </details>
+
+        <details>
+          <summary>JSON de la tâche</summary>
+          <textarea id="raw-json" rows="14" class="mono"></textarea>
+          <button id="btn-apply-json" class="small">Appliquer le JSON</button>
+          <button id="btn-export-json" class="small">Télécharger</button>
+        </details>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================ MODÈLES -->
+  <section id="tab-templates" class="tab">
+    <div class="bar"><h2>Modèles prêts à l'emploi</h2></div>
+    <div id="templates" class="cards"></div>
+  </section>
+
+  <!-- ============================================================ DONNÉES -->
+  <section id="tab-data" class="tab">
+    <div class="bar">
+      <select id="data-task"></select>
+      <input id="data-q" placeholder="Rechercher…">
+      <label class="check"><input type="checkbox" id="data-new"> 24 dernières heures</label>
+      <div class="spacer"></div>
+      <a class="btn" id="dl-csv">CSV</a><a class="btn" id="dl-xlsx">Excel</a><a class="btn" id="dl-json">JSON</a>
+      <button id="data-clear" class="danger small">Vider</button>
+    </div>
+    <p class="muted" id="data-info"></p>
+    <div class="table-scroll tall"><table class="grid compact" id="data-table"></table></div>
+  </section>
+
+  <!-- ============================================================ AIDE -->
+  <section id="tab-help" class="tab help">
+    <h2>Mode d'emploi en 6 étapes</h2>
+    <ol>
+      <li><b>Éditeur</b> → collez l'URL → <b>Charger la page</b>. La page s'affiche telle que le robot la voit.</li>
+      <li><b>Détection automatique</b> : Poulpe propose les listes trouvées avec leurs colonnes. Cliquez sur « Utiliser ».<br>Ou décrivez votre besoin en français et cliquez <b>Configurer avec l'IA</b>.</li>
+      <li>Affinez en cliquant dans la page : un clic sur un titre ajoute la colonne pour <i>tous</i> les blocs similaires (contour bleu = blocs, vert = champs).</li>
+      <li>Pagination : choisissez le type puis, en mode « Bouton suivant », cliquez sur le bouton de la page.</li>
+      <li><b>Tester (2 pages)</b> pour valider, puis <b>Enregistrer</b>.</li>
+      <li>Onglet <b>Tâches</b> : lancez, planifiez, téléchargez CSV / Excel, ou recevez les nouvelles lignes par webhook n8n.</li>
+    </ol>
+    <h3>Quand utiliser le mode IA</h3>
+    <p>Pages mal structurées, mises en page qui changent souvent, PDF convertis en HTML : Claude lit le texte et renvoie les colonnes demandées. Plus lent et payant (clé API Anthropic), mais insensible aux changements de design.</p>
+    <h3>Sites avec connexion</h3>
+    <p>Ajoutez des actions <code>type</code> avec <code>${ENV:MON_MOT_DE_PASSE}</code> et cochez « Garder la session ». Pour un site avec CAPTCHA ou double authentification : <code>node src/cli.js login &lt;id-tâche&gt; &lt;url&gt;</code> ouvre un vrai navigateur, vous vous connectez à la main, la session est réutilisée ensuite.</p>
+    <h3>Usage responsable</h3>
+    <p>Respectez les conditions d'utilisation des sites, robots.txt (activé par défaut) et le RGPD pour les données personnelles. Préférez les API officielles quand elles existent (modèles TED et Banque mondiale).</p>
+  </section>
+</main>
+
+<div id="toast" class="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

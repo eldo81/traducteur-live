@@ -1,0 +1,40 @@
+{
+  "title": "Banque mondiale : avis de marchés Afrique de l'Ouest (API officielle)",
+  "category": "Appels d'offres",
+  "description": "Derniers avis de passation de marchés de la Banque mondiale, filtrés sur le Sénégal et les pays voisins, avec date limite à venir.",
+  "notes": "API publique search.worldbank.org (procnotices). Les 300 avis les plus récents sont lus puis filtrés par pays. Élargissez la liste dans « filters ».",
+  "task": {
+    "name": "Banque mondiale — avis Afrique de l'Ouest",
+    "source": {
+      "type": "api",
+      "method": "GET",
+      "url": "https://search.worldbank.org/api/v2/procnotices?format=json&rows={limit}&os={offset}&srt=noticedate&order=desc",
+      "itemsPath": "procnotices",
+      "pageSize": 50,
+      "maxPages": 6,
+      "fields": [
+        { "name": "reference", "path": "id" },
+        { "name": "titre", "path": "bid_description" },
+        { "name": "projet", "path": "project_name" },
+        { "name": "pays", "path": "project_ctry_name" },
+        { "name": "type_avis", "path": "notice_type" },
+        { "name": "methode", "path": "procurement_method_name" },
+        { "name": "publication", "path": "noticedate" },
+        { "name": "date_limite", "path": "submission_deadline_date" },
+        { "name": "statut", "path": "notice_status" }
+      ],
+      "linkTemplate": "https://projects.worldbank.org/en/projects-operations/procurement-detail/{item.id}"
+    },
+    "cleaning": [
+      { "name": "publication", "transform": "date" },
+      { "name": "date_limite", "transform": "date" }
+    ],
+    "filters": [
+      { "field": "pays", "op": "containsAny", "value": "Senegal,Mali,Mauritania,Gambia,Guinea,Cote d'Ivoire,Burkina Faso,Niger,Cabo Verde,Guinea-Bissau,Togo,Benin" }
+    ],
+    "dedupKey": ["reference"],
+    "incremental": true,
+    "schedule": { "enabled": true, "cron": "15 7 * * 1-5", "timezone": "Africa/Dakar" },
+    "outputs": { "onlyNew": true }
+  }
+}

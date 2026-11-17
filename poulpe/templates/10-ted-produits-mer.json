@@ -1,0 +1,94 @@
+{
+  "title": "TED Europa : marchés produits de la mer (API officielle)",
+  "category": "Appels d'offres",
+  "description": "Avis TED publiés ces 7 derniers jours sur les CPV poisson, crustacés, mollusques et produits de la mer transformés. API officielle TED v3 : pas de navigateur, pas de blocage.",
+  "notes": "Requête au format « expert search » de TED. Modifiez les CPV dans source.body.query. Planifié chaque jour ouvré à 7h (Dakar). Ajoutez votre webhook n8n pour recevoir les nouveaux avis.",
+  "task": {
+    "name": "TED — produits de la mer (7 jours)",
+    "source": {
+      "type": "api",
+      "method": "POST",
+      "url": "https://api.ted.europa.eu/v3/notices/search",
+      "body": {
+        "query": "classification-cpv IN (03311000 03311200 03311300 03311400 03311700 15200000 15220000 15229000 15230000 15240000 15250000) AND publication-date>={today-7:compact}",
+        "fields": [
+          "publication-number",
+          "notice-title",
+          "buyer-name",
+          "buyer-country",
+          "publication-date",
+          "deadline-receipt-tender-date-lot",
+          "notice-type",
+          "classification-cpv"
+        ],
+        "page": "{page}",
+        "limit": 50,
+        "paginationMode": "PAGE_NUMBER"
+      },
+      "itemsPath": "notices",
+      "pageSize": 50,
+      "maxPages": 6,
+      "lang": [
+        "fra",
+        "eng"
+      ],
+      "fields": [
+        {
+          "name": "reference",
+          "path": "publication-number"
+        },
+        {
+          "name": "titre",
+          "path": "notice-title"
+        },
+        {
+          "name": "acheteur",
+          "path": "buyer-name"
+        },
+        {
+          "name": "pays",
+          "path": "buyer-country"
+        },
+        {
+          "name": "publication",
+          "path": "publication-date"
+        },
+        {
+          "name": "date_limite",
+          "path": "deadline-receipt-tender-date-lot"
+        },
+        {
+          "name": "type_avis",
+          "path": "notice-type"
+        },
+        {
+          "name": "cpv",
+          "path": "classification-cpv"
+        }
+      ],
+      "linkTemplate": "https://ted.europa.eu/fr/notice/-/detail/{item.publication-number}"
+    },
+    "cleaning": [
+      {
+        "name": "publication",
+        "transform": "date"
+      },
+      {
+        "name": "date_limite",
+        "transform": "date"
+      }
+    ],
+    "dedupKey": [
+      "reference"
+    ],
+    "incremental": true,
+    "schedule": {
+      "enabled": true,
+      "cron": "0 7 * * 1-5",
+      "timezone": "Africa/Dakar"
+    },
+    "outputs": {
+      "onlyNew": true
+    }
+  }
+}

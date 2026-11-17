@@ -1,0 +1,38 @@
+{
+  "title": "Annuaire B2B : fiches entreprises → leads",
+  "category": "Prospection",
+  "description": "Collez l'URL d'une page d'annuaire (chambre de commerce, salon professionnel, liste d'exposants, association sectorielle). Claude extrait entreprise, activité, ville, téléphone, email et site, puis note chaque lead.",
+  "notes": "Vérifiez les conditions d'utilisation de l'annuaire. Données personnelles : base légale RGPD (intérêt légitime B2B), information des personnes au premier contact, droit d'opposition.",
+  "task": {
+    "name": "Leads — annuaire",
+    "startUrls": [],
+    "extract": {
+      "mode": "ai",
+      "ai": {
+        "instructions": "Extrais chaque entreprise listée sur la page.",
+        "fields": [
+          { "name": "entreprise", "type": "text", "description": "Raison sociale" },
+          { "name": "activite", "type": "text", "description": "Activité / produits" },
+          { "name": "ville", "type": "text", "description": "Ville" },
+          { "name": "pays", "type": "text", "description": "Pays" },
+          { "name": "telephone", "type": "text", "description": "Téléphone au format international" },
+          { "name": "email", "type": "text", "description": "Email professionnel" },
+          { "name": "site", "type": "url", "description": "Site web" }
+        ]
+      }
+    },
+    "pagination": { "type": "none", "maxPages": 5 },
+    "enrich": {
+      "enabled": false,
+      "prompt": "Note de 1 à 5 l'intérêt de chaque entreprise comme acheteur de produits de la mer congelés d'Afrique de l'Ouest (importateur, grossiste, transformateur, distributeur).",
+      "fields": [
+        { "name": "score", "type": "number", "description": "Note 1 à 5" },
+        { "name": "segment", "type": "text", "description": "Importateur, grossiste, transformateur, distributeur, autre" }
+      ]
+    },
+    "dedupKey": ["entreprise", "ville"],
+    "incremental": true,
+    "browser": { "respectRobots": true, "blockResources": true },
+    "outputs": { "onlyNew": true }
+  }
+}

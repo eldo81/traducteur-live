@@ -1,0 +1,26 @@
+{
+  "name": "poulpe",
+  "version": "1.0.0",
+  "description": "Poulpe : scraper web visuel pointer-cliquer, extraction IA, planification et exports (CSV, Excel, JSON, webhook n8n).",
+  "type": "module",
+  "main": "src/server.js",
+  "bin": {
+    "poulpe": "src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js serve",
+    "run-task": "node src/cli.js run",
+    "test": "node --test --test-force-exit test/*.test.js",
+    "postinstall": "playwright install chromium || echo \"Installez Chromium : npx playwright install chromium\""
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.9.0",
+    "croner": "^9.0.0",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "playwright": "^1.50.0"
+  }
+}

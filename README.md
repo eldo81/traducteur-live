@@ -161,3 +161,9 @@ Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuelleme
 7. Garde-fou « rien à traduire » : si le modèle commence sa réponse par le marqueur `·`, l'app l'annule et coupe le son, pour que ce marqueur ne soit jamais prononcé.
 8. Modèles `gpt-realtime-2.x` : effort de raisonnement réglé sur `minimal` pour limiter la latence. Si l'API refuse ce réglage, l'app relance la connexion sans lui.
 6. En mode Écoute sans voix, la sortie est en texte seul (`output_modalities: ["text"]`) : c'est plus rapide et moins cher.
+
+---
+
+## Poulpe — extraction web (dossier `poulpe/`)
+
+Outil séparé de l'interprète : scraper visuel pointer-cliquer avec IA Claude, planification, exports CSV/Excel et webhook n8n. Modèles inclus pour TED, Banque mondiale et UNGM. Installation et mode d'emploi : [poulpe/README.md](poulpe/README.md).

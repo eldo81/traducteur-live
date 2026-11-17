@@ -1,0 +1,17 @@
+{
+  "title": "Veille prix concurrents (boutique en ligne)",
+  "category": "Veille",
+  "description": "Liste de produits d'une boutique : nom, prix, disponibilité, lien. Exécution quotidienne : chaque nouvelle ligne = nouveau produit ou nouveau prix (la clé anti-doublon inclut le prix).",
+  "notes": "Chargez l'URL de la catégorie dans l'éditeur puis « Détection automatique » : les sélecteurs dépendent du site.",
+  "task": {
+    "name": "Veille prix — boutique",
+    "startUrls": [],
+    "extract": { "mode": "list", "listSelector": "", "fields": [] },
+    "pagination": { "type": "next", "maxPages": 5 },
+    "dedupKey": ["lien", "prix"],
+    "incremental": true,
+    "schedule": { "enabled": false, "cron": "0 6 * * *", "timezone": "Africa/Dakar" },
+    "browser": { "respectRobots": true, "blockResources": true },
+    "outputs": { "onlyNew": true }
+  }
+}
