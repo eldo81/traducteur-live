@@ -30,7 +30,7 @@ Ce que Poulpe ne fait pas, volontairement : contourner les CAPTCHA, masquer l'au
 
 1. Installez **Node.js LTS** depuis nodejs.org (bouton « Windows Installer (.msi) », options par défaut ; si une fenêtre « Install Additional Tools » s'ouvre à la fin, fermez-la).
 2. Décompressez le dossier du projet, ouvrez `poulpe`, double-cliquez sur **`Lancer-Poulpe.bat`**. La première fois, il installe tout (2 à 5 min), puis ouvre le navigateur.
-3. Onglet **Réglages** : collez votre clé API Anthropic (`sk-ant-api03-…`) → **Enregistrer**. Elle est vérifiée puis gardée sur ce PC.
+3. Onglet **Réglages** : collez votre clé API Anthropic (`sk-ant-…`) → **Enregistrer**. Elle est vérifiée puis gardée sur ce PC.
 
 Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires** → **Exécuter quand même**.
 

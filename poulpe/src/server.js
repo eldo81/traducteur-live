@@ -47,8 +47,8 @@ export function createApp() {
   });
   app.post('/api/settings/key', wrap(async (req, res) => {
     const key = String(req.body?.apiKey || '').trim().replace(/^["']|["']$/g, '');
-    if (!key.startsWith('sk-ant-')) throw Object.assign(new Error('Ce n\'est pas une clé Anthropic : elle doit commencer par sk-ant-api03-…'), { status: 400 });
-    if (!key.startsWith('sk-ant-api')) throw Object.assign(new Error('Cette clé n\'est pas une clé API (elle doit commencer par sk-ant-api03-). Créez-la sur console.anthropic.com → API Keys.'), { status: 400 });
+    // Clés d'espace de travail (sk-ant-api…) et clés personnelles (sk-ant-usr…) : la vérification auprès de l'API tranche.
+    if (!/^sk-ant-[a-z0-9]+-/i.test(key)) throw Object.assign(new Error('Ce n\'est pas une clé Anthropic : elle doit commencer par sk-ant-'), { status: 400 });
     try {
       await testKey(key);
     } catch (e) {
