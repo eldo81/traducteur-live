@@ -14,6 +14,7 @@
     <button data-tab="editor">Éditeur</button>
     <button data-tab="templates">Modèles</button>
     <button data-tab="data">Données</button>
+    <button data-tab="settings">Réglages</button>
     <button data-tab="help">Aide</button>
   </nav>
   <div id="status" class="status"></div>
@@ -252,6 +253,26 @@
     </div>
     <p class="muted" id="data-info"></p>
     <div class="table-scroll tall"><table class="grid compact" id="data-table"></table></div>
+  </section>
+
+  <!-- ============================================================ RÉGLAGES -->
+  <section id="tab-settings" class="tab settings">
+    <h2>Réglages</h2>
+    <div class="card">
+      <h3>Intelligence artificielle (Claude)</h3>
+      <p id="key-status" class="muted">…</p>
+      <ol class="small">
+        <li>Ouvrez <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com → API Keys</a> (créditez le compte dans <i>Billing</i> si ce n'est pas fait).</li>
+        <li><b>Create Key</b> → nom « poulpe » → <b>Copy</b>. La clé commence par <code>sk-ant-api03-</code>.</li>
+        <li>Collez-la ci-dessous et cliquez sur <b>Enregistrer</b>. Elle est vérifiée puis gardée sur cet ordinateur uniquement.</li>
+      </ol>
+      <label for="api-key">Clé API Anthropic</label>
+      <div class="key-row">
+        <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-api03-…">
+        <button id="btn-key-save" class="primary">Enregistrer</button>
+        <button id="btn-key-del" class="danger" hidden>Supprimer la clé</button>
+      </div>
+    </div>
   </section>
 
   <!-- ============================================================ AIDE -->

@@ -26,7 +26,15 @@ Outil d'extraction de données web auto-hébergé, dans la lignée des scrapers 
 
 Ce que Poulpe ne fait pas, volontairement : contourner les CAPTCHA, masquer l'automatisation ou forcer un site qui refuse les robots.
 
-## Installation (Windows, Mac, Linux)
+## Installation Windows en 3 clics
+
+1. Installez **Node.js LTS** depuis nodejs.org (bouton « Windows Installer (.msi) », options par défaut ; si une fenêtre « Install Additional Tools » s'ouvre à la fin, fermez-la).
+2. Décompressez le dossier du projet, ouvrez `poulpe`, double-cliquez sur **`Lancer-Poulpe.bat`**. La première fois, il installe tout (2 à 5 min), puis ouvre le navigateur.
+3. Onglet **Réglages** : collez votre clé API Anthropic (`sk-ant-api03-…`) → **Enregistrer**. Elle est vérifiée puis gardée sur ce PC.
+
+Si Windows affiche « Windows a protégé votre ordinateur » : **Informations complémentaires** → **Exécuter quand même**.
+
+## Installation (Windows, Mac, Linux) en ligne de commande
 
 Prérequis : **Node.js 20 ou plus** (nodejs.org).
 
@@ -48,7 +56,7 @@ npm start
 
 | Variable | Rôle | Défaut |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Fonctions IA | absente = IA désactivée |
+| `ANTHROPIC_API_KEY` | Fonctions IA (sinon : onglet Réglages) | absente = IA désactivée |
 | `POULPE_MODEL` | Modèle Claude | `claude-opus-5-5` |
 | `POULPE_EFFORT` | Effort de raisonnement (`low`, `medium`, `high`) | `low` |
 | `PORT` / `HOST` | Écoute du serveur | `8787` / `127.0.0.1` |

@@ -8,7 +8,7 @@ import * as store from './store.js';
 import * as runner from './runner.js';
 import { launch, gotoWithRetry, runActions, extractPage, defaultsFor } from './engine.js';
 import { toCSV, toXLSX, toJSON } from './export.js';
-import { suggestConfig, aiAvailable, aiUsage, AI_MODEL } from './ai.js';
+import { suggestConfig, aiAvailable, aiUsage, AI_MODEL, setApiKey, keySource, testKey } from './ai.js';
 import { cleanRow, passFilters } from './transforms.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,6 +35,38 @@ export function createApp() {
     res.status(e.status || 500).json({ error: e.message });
   });
   const notFound = (msg) => Object.assign(new Error(msg), { status: 404 });
+
+  // Clé API enregistrée depuis l'interface.
+  const cfg = store.readConfig();
+  if (cfg.anthropicApiKey) setApiKey(cfg.anthropicApiKey);
+
+  // ---------------------------------------------------------------- réglages
+  app.get('/api/settings', (req, res) => {
+    const c = store.readConfig();
+    res.json({ ai: aiAvailable(), source: keySource(), keyEnd: c.anthropicApiKey ? c.anthropicApiKey.slice(-4) : '', model: AI_MODEL });
+  });
+  app.post('/api/settings/key', wrap(async (req, res) => {
+    const key = String(req.body?.apiKey || '').trim().replace(/^["']|["']$/g, '');
+    if (!key.startsWith('sk-ant-')) throw Object.assign(new Error('Ce n\'est pas une clé Anthropic : elle doit commencer par sk-ant-api03-…'), { status: 400 });
+    if (!key.startsWith('sk-ant-api')) throw Object.assign(new Error('Cette clé n\'est pas une clé API (elle doit commencer par sk-ant-api03-). Créez-la sur console.anthropic.com → API Keys.'), { status: 400 });
+    try {
+      await testKey(key);
+    } catch (e) {
+      const st = e.status || 0;
+      if (st === 401 || st === 403) throw Object.assign(new Error('Clé refusée par Anthropic (révoquée ou mal copiée).'), { status: 400 });
+      if (st !== 404) throw Object.assign(new Error('Impossible de vérifier la clé : ' + e.message + '. Vérifiez votre connexion Internet.'), { status: 502 });
+    }
+    store.writeConfig({ ...store.readConfig(), anthropicApiKey: key });
+    setApiKey(key);
+    res.json({ ok: true, ai: true, keyEnd: key.slice(-4), model: AI_MODEL });
+  }));
+  app.delete('/api/settings/key', wrap((req, res) => {
+    const c = store.readConfig();
+    delete c.anthropicApiKey;
+    store.writeConfig(c);
+    setApiKey('');
+    res.json({ ok: true, ai: aiAvailable() });
+  }));
 
   // ---------------------------------------------------------------- infos
   app.get('/api/status', (req, res) => res.json({

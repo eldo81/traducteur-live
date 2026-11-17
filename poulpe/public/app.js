@@ -44,6 +44,7 @@ function showTab(name) {
   if (name === 'tasks') loadTasks();
   if (name === 'templates') loadTemplates();
   if (name === 'data') loadDataTasks();
+  if (name === 'settings') loadSettings();
 }
 $$('nav button').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
 document.addEventListener('click', (e) => { const g = e.target.closest('[data-goto]'); if (g) { e.preventDefault(); showTab(g.dataset.goto); } });
@@ -52,7 +53,7 @@ document.addEventListener('click', (e) => { const g = e.target.closest('[data-go
 async function refreshStatus() {
   try {
     const s = await api('/api/status');
-    $('#status').innerHTML = `<span class="dot ${s.ai ? 'ok' : ''}"></span>IA ${s.ai ? esc(s.model) : 'désactivée'}`
+    $('#status').innerHTML = `<span class="dot ${s.ai ? 'ok' : ''}"></span>${s.ai ? 'IA ' + esc(s.model) : '<a href="#" data-goto="settings">IA désactivée : ajouter la clé</a>'}`
       + (s.active.length ? ` · <b>${s.active.length}</b> en cours` : '');
     window.AI_ON = s.ai;
   } catch { $('#status').textContent = 'Serveur injoignable'; }
@@ -572,6 +573,30 @@ $('#data-q').addEventListener('input', () => { clearTimeout(loadData.t); loadDat
 $('#data-clear').addEventListener('click', async () => {
   const id = $('#data-task').value;
   if (id && confirm('Effacer toutes les lignes collectées de cette tâche ?')) { await api(`/api/tasks/${id}/results`, { method: 'DELETE' }); loadDataTasks(); }
+});
+
+// ================================================================== réglages
+async function loadSettings() {
+  const s = await api('/api/settings').catch(() => null);
+  if (!s) return;
+  const src = { reglages: `enregistrée dans Poulpe (…${esc(s.keyEnd)})`, environnement: 'fournie par la variable ANTHROPIC_API_KEY', jeton: 'fournie par un jeton' }[s.source];
+  $('#key-status').innerHTML = s.ai ? `✅ IA active — modèle <code>${esc(s.model)}</code>, clé ${src}.` : '❌ IA désactivée : aucune clé enregistrée.';
+  $('#btn-key-del').hidden = s.source !== 'reglages';
+}
+$('#btn-key-save').addEventListener('click', (e) => busy(e.target, async () => {
+  const key = $('#api-key').value.trim();
+  if (!key) throw new Error('Collez la clé dans le champ.');
+  await api('/api/settings/key', { method: 'POST', body: { apiKey: key } });
+  $('#api-key').value = '';
+  toast('Clé vérifiée et enregistrée : l\'IA est active.', 'ok');
+  loadSettings();
+  refreshStatus();
+}));
+$('#btn-key-del').addEventListener('click', async () => {
+  if (!confirm('Supprimer la clé enregistrée ?')) return;
+  await api('/api/settings/key', { method: 'DELETE' });
+  loadSettings();
+  refreshStatus();
 });
 
 // ================================================================== démarrage

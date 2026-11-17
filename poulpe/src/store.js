@@ -117,3 +117,11 @@ export function readSnapshot(id) {
   if (!/^[a-f0-9]{16}$/.test(id)) return null;
   try { return fs.readFileSync(path.join(DATA_DIR, 'snapshots', id + '.html'), 'utf8'); } catch { return null; }
 }
+
+// ------------------------------------------------------------------ réglages (clé API saisie dans l'interface)
+const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
+export function readConfig() { return readJSON(CONFIG_FILE, {}); }
+export function writeConfig(cfg) {
+  writeJSON(CONFIG_FILE, cfg);
+  try { fs.chmodSync(CONFIG_FILE, 0o600); } catch { /* Windows : sans effet */ }
+}

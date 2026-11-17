@@ -24,6 +24,8 @@ async function main() {
   if (!cmd || cmd === 'help' || cmd === '--help') { console.log(HELP); return; }
   if (cmd === 'serve') return startServer();
   const store = await import('./store.js');
+  const cfg = store.readConfig();
+  if (cfg.anthropicApiKey) (await import('./ai.js')).setApiKey(cfg.anthropicApiKey);
   if (cmd === 'list') {
     for (const t of store.listTasks()) console.log(`${t.id.padEnd(36)} ${t.name}  [${store.readResults(t.id).length} lignes]${t.schedule?.enabled ? '  cron ' + t.schedule.cron : ''}`);
     return;

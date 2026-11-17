@@ -96,3 +96,7 @@ label.check input { width: auto; }
   .frame-wrap { height: 50vh; }
   .grid td.actions { white-space: normal; }
 }
+
+.settings { max-width: 760px; }
+.key-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.key-row input { flex: 1; min-width: 240px; font-family: var(--mono); }

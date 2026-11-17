@@ -8,14 +8,31 @@ const EFFORT = process.env.POULPE_EFFORT || 'low';
 const CHUNK_CHARS = Number(process.env.POULPE_AI_CHUNK || 300000);
 
 let client = null;
+let savedKey = '';
 export function setClient(c) { client = c; }
+
+/** Clé saisie dans l'interface (Réglages) : prioritaire sur la variable d'environnement. */
+export function setApiKey(key) {
+  savedKey = String(key || '').trim();
+  client = null;
+}
+function currentKey() { return savedKey || process.env.ANTHROPIC_API_KEY || ''; }
+export function keySource() { return savedKey ? 'reglages' : process.env.ANTHROPIC_API_KEY ? 'environnement' : process.env.ANTHROPIC_AUTH_TOKEN ? 'jeton' : ''; }
+
 function getClient() {
-  if (!client) client = new Anthropic({ maxRetries: 3 });
+  if (!client) client = currentKey() ? new Anthropic({ apiKey: currentKey(), maxRetries: 3 }) : new Anthropic({ maxRetries: 3 });
   return client;
 }
 
 export function aiAvailable() {
-  return Boolean(client || process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
+  return Boolean(client || currentKey() || process.env.ANTHROPIC_AUTH_TOKEN);
+}
+
+/** Vérifie la clé sans consommer de tokens (lecture de la fiche du modèle). */
+export async function testKey(key) {
+  const c = new Anthropic({ apiKey: key || currentKey(), maxRetries: 1 });
+  const m = await c.models.retrieve(AI_MODEL);
+  return { ok: true, model: m.id, name: m.display_name };
 }
 
 const usage = { input: 0, output: 0, calls: 0 };
