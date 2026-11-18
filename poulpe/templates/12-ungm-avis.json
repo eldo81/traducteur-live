@@ -2,40 +2,116 @@
   "title": "UNGM : avis de marchés des Nations unies (lecture IA)",
   "category": "Appels d'offres",
   "description": "Page publique des avis UNGM lue par Claude : titre, agence, référence, type, pays, dates. Insensible aux changements de mise en page. Clé ANTHROPIC_API_KEY requise.",
-  "notes": "Pour filtrer à la source (pays, UNSPSC), faites la recherche sur ungm.org, collez l'URL obtenue dans l'éditeur, ou ajoutez des actions. Le tri des avis pertinents pour DIONEO est fait par l'enrichissement IA.",
+  "notes": "La liste UNGM se charge en différé (#tblNotices .tableBody .tableRow, vérifié le 18/11/2026). Claude lit les avis puis ne garde que ceux accessibles à DIONEO. Coût indicatif : 0,10 à 0,30 $ par exécution.",
   "task": {
     "name": "UNGM — avis publics",
-    "startUrls": ["https://www.ungm.org/Public/Notice"],
+    "startUrls": [
+      "https://www.ungm.org/Public/Notice"
+    ],
     "extract": {
       "mode": "ai",
       "ai": {
         "instructions": "Extrais chaque avis de marché listé dans le tableau des résultats.",
         "fields": [
-          { "name": "titre", "type": "text", "description": "Titre de l'avis" },
-          { "name": "date_limite", "type": "date", "description": "Date limite (deadline)" },
-          { "name": "publication", "type": "date", "description": "Date de publication" },
-          { "name": "agence", "type": "text", "description": "Agence ONU" },
-          { "name": "type_avis", "type": "text", "description": "Type (RFQ, ITB, RFP, EOI…)" },
-          { "name": "reference", "type": "text", "description": "Référence de l'avis" },
-          { "name": "pays", "type": "text", "description": "Pays ou bénéficiaire" }
+          {
+            "name": "titre",
+            "type": "text",
+            "description": "Titre de l'avis"
+          },
+          {
+            "name": "date_limite",
+            "type": "date",
+            "description": "Date limite (deadline)"
+          },
+          {
+            "name": "publication",
+            "type": "date",
+            "description": "Date de publication"
+          },
+          {
+            "name": "agence",
+            "type": "text",
+            "description": "Agence ONU"
+          },
+          {
+            "name": "type_avis",
+            "type": "text",
+            "description": "Type (RFQ, ITB, RFP, EOI…)"
+          },
+          {
+            "name": "reference",
+            "type": "text",
+            "description": "Référence de l'avis"
+          },
+          {
+            "name": "pays",
+            "type": "text",
+            "description": "Pays ou bénéficiaire"
+          }
         ]
       }
     },
-    "pagination": { "type": "scroll", "maxScrolls": 4 },
-    "browser": { "respectRobots": true, "blockResources": true, "waitForSelector": "table, .tableRow, #tblNotices", "waitMs": 2500, "delayMs": [1500, 3000] },
+    "pagination": {
+      "type": "scroll",
+      "maxScrolls": 4
+    },
+    "browser": {
+      "respectRobots": true,
+      "blockResources": true,
+      "waitForSelector": "#tblNotices .tableBody .tableRow",
+      "waitMs": 1500,
+      "delayMs": [
+        1500,
+        3000
+      ]
+    },
     "enrich": {
       "enabled": true,
       "prompt": "Le soumissionnaire est DIONEO, négociant import-export basé à Dakar (produits de la mer, agroalimentaire, fournitures générales, matériel BTP léger, logistique). Indique si l'avis est accessible et pertinent pour lui (fourniture de biens ou services qu'un négociant peut sourcer), en excluant le conseil individuel, les postes et les marchés réservés à un pays tiers.",
       "fields": [
-        { "name": "pertinent", "type": "boolean", "description": "true si pertinent pour DIONEO" },
-        { "name": "secteur", "type": "text", "description": "Secteur en 2-3 mots" },
-        { "name": "raison", "type": "text", "description": "Justification en une phrase" }
+        {
+          "name": "pertinent",
+          "type": "boolean",
+          "description": "true si pertinent pour DIONEO"
+        },
+        {
+          "name": "secteur",
+          "type": "text",
+          "description": "Secteur en 2-3 mots"
+        },
+        {
+          "name": "raison",
+          "type": "text",
+          "description": "Justification en une phrase"
+        }
       ]
     },
-    "filters": [{ "field": "date_limite", "op": "after", "value": "today" }],
-    "dedupKey": ["reference", "titre"],
+    "filters": [
+      {
+        "field": "date_limite",
+        "op": "after",
+        "value": "today"
+      }
+    ],
+    "dedupKey": [
+      "reference",
+      "titre"
+    ],
     "incremental": true,
-    "schedule": { "enabled": false, "cron": "30 7 * * 1-5", "timezone": "Africa/Dakar" },
-    "outputs": { "onlyNew": true }
+    "schedule": {
+      "enabled": true,
+      "cron": "30 7 * * 1-5",
+      "timezone": "Africa/Dakar"
+    },
+    "outputs": {
+      "onlyNew": true
+    },
+    "postFilters": [
+      {
+        "field": "pertinent",
+        "op": "notRegex",
+        "value": "^false$"
+      }
+    ]
   }
 }
