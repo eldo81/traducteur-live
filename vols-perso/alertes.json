@@ -1,0 +1,5 @@
+[
+  {"origine": "DSS", "destination": "CDG", "aller": "2027-01-20", "flex": 3, "classe": "eco", "max_eur": 350},
+  {"origine": "DSS", "destination": "BRU", "aller": "2027-01-20", "flex": 3, "classe": "affaires", "max_miles": 60000},
+  {"origine": "DSS", "destination": "IST", "aller": "2027-02-10", "flex": 3, "classe": "affaires", "max_miles": 70000}
+]
