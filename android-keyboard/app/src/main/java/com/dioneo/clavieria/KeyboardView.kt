@@ -218,7 +218,11 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
 
     // ---------- Dessin ----------
     override fun onDraw(canvas: Canvas) {
-        canvas.drawColor(skin.bg)
+        // Fond limité à la zone des touches : la vue n'est pas découpée (pour que la bulle
+        // déborde au-dessus), un drawColor recouvrirait la barre IA et les suggestions.
+        keyPaint.shader = null
+        keyPaint.color = skin.bg
+        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), keyPaint)
         val pressed = HashSet<Key>()
         for (p in ptrs.values) pressed.add(p.key)
         rows.forEachIndexed { ri, row ->
