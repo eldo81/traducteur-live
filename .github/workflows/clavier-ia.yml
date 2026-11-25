@@ -1,0 +1,59 @@
+name: Clavier IA (APK Android)
+
+on:
+  push:
+    paths:
+      - 'android-keyboard/**'
+      - '.github/workflows/clavier-ia.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: clavier-ia-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-keyboard
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Compiler l'APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk ClavierIA.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ClavierIA-apk
+          path: android-keyboard/ClavierIA.apk
+
+      - name: Publier en téléchargement direct
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: clavier-ia-latest
+          name: Clavier IA — dernière version
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          make_latest: false
+          files: android-keyboard/ClavierIA.apk
+          body: |
+            **Clavier IA** pour Android 8 et plus : clavier façon iPhone avec correction, reformulation, résumé, traduction et assistant IA.
+
+            1. Sur le téléphone, téléchargez **ClavierIA.apk** ci-dessous et ouvrez-le (autorisez « installer des applis inconnues » pour le navigateur).
+            2. Ouvrez l'app **Clavier IA** → Activer → Choisir Clavier IA → collez la clé OpenAI → Enregistrer et tester.
+
+            Build ${{ github.run_number }} · commit ${{ github.sha }}

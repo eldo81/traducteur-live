@@ -106,6 +106,10 @@ Si vous ne pouvez rien installer d'autre sur le PC, l'extension **Interprète Li
 
 Installation et mode d'emploi : [extension.html](extension.html). Téléchargement : [interprete-live-extension.zip](interprete-live-extension.zip). Code source dans `extension/` ; après une modification, lancez `python3 extension/build.py` pour régénérer `main.js` et le zip.
 
+## 4 quater. Clavier IA pour Android (façon iPhone)
+
+Clavier système Android avec le rendu et les sensations du clavier iPhone, et une barre IA : corriger, reformuler, résumer, traduire en direct (15 langues dont le wolof), assistant de rédaction, dictée et presse-papiers. APK : [Releases → clavier-ia-latest](https://github.com/eldo81/traducteur-live/releases/tag/clavier-ia-latest). Détails : [android-keyboard/README.md](android-keyboard/README.md).
+
 ## 5. Réglages disponibles
 
 | Réglage | Effet |
