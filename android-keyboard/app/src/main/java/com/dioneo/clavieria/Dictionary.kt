@@ -19,8 +19,12 @@ class Dictionary(private val ctx: Context, private val prefs: Prefs) {
     private val neighbours = HashMap<String, Map<Char, Set<Char>>>()
     private var dirty = false
 
-    fun norm(s: String): String =
-        Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD).replace(Regex("\\p{Mn}+"), "").replace('’', '\'')
+    private val marks = Regex("\\p{Mn}+")
+    private val normCache = HashMap<String, String>()
+
+    /** Forme sans accents, en minuscules (mise en cache : la frappe reste instantanée). */
+    fun norm(s: String): String = normCache[s] ?: Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD)
+        .replace(marks, "").replace('’', '\'').also { if (normCache.size < 20000) normCache[s] = it }
 
     private fun lex(lang: String): Lex = lexes.getOrPut(lang) {
         val words = try {
