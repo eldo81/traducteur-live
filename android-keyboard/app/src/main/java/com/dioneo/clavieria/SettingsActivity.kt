@@ -89,6 +89,8 @@ class SettingsActivity : Activity() {
             typeface = Typeface.DEFAULT_BOLD
             setTextColor(cText)
         })
+        val version = try { packageManager.getPackageInfo(packageName, 0).versionName } catch (_: Exception) { "?" }
+        col.addView(sub("Version $version").apply { setTextColor(cAccent) })
         col.addView(sub("Le clavier façon iPhone, avec correction, reformulation, résumé, traduction instantanée et assistant de rédaction intégrés."))
 
         // 1. Activation
