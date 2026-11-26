@@ -41,9 +41,13 @@ Les fonctions IA agissent sur la **sélection**, sinon sur **tout le champ**. El
 
 - Android affiche pour tout clavier tiers un avertissement standard sur la collecte du texte saisi.
 - Le keystore de signature est dans le dépôt (pratique pour une installation directe). Pour une publication sur le Play Store, créez une clé privée et passez-la en secret GitHub.
-- Correction automatique : dictionnaire de départ volontairement compact (≈ 1 100 mots FR/EN) qui grossit avec vos mots. Elle reste prudente : accents manquants, touche voisine, lettres inversées, lettre oubliée.
+- Correction automatique : dictionnaire de 49 000 mots français et 30 000 mots anglais classés par fréquence, enrichi de vos propres mots. Elle corrige les accents manquants, la touche voisine, les lettres inversées et la lettre oubliée ; la grammaire passe par le bouton IA « Corriger ».
 
 ## Code
 
 `app/src/main/java/com/dioneo/clavieria/` — Kotlin, sans aucune bibliothèque tierce :
 `KeyboardView` (dessin et tactile), `ClavierService` (clavier système, panneaux IA, dictée, emojis, presse-papiers), `Dictionary` (suggestions, correction, prédiction), `AiClient` + `Prompts` (OpenAI), `SettingsActivity` (installation et réglages).
+
+## Crédits
+
+Listes de fréquence des mots : projet [FrequencyWords](https://github.com/hermitdave/FrequencyWords) de Hermit Dave (contenu sous licence CC BY-SA 4.0), nettoyées des fautes courantes et complétées de vocabulaire commerce / logistique.

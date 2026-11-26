@@ -94,6 +94,7 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
         feedback = Feedback(this)
         ai = AiClient(prefs)
         dict = Dictionary(this, prefs)
+        Thread { try { dict.preload() } catch (_: Exception) {} }.start()
         clipboard = getSystemService(ClipboardManager::class.java)
         clipboard.addPrimaryClipChangedListener(clipListener)
     }
