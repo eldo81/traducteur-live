@@ -1,0 +1,108 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Roboto,"Helvetica Neue",Arial,sans-serif;background:#e9ebef;padding:24px;display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.phone{width:390px;border-radius:38px;overflow:hidden;background:#000;border:10px solid #111;box-shadow:0 18px 40px rgba(0,0,0,.25);display:flex;flex-direction:column;position:relative}
+.phone.land{width:780px;height:390px}
+.app{flex:1;padding:18px 18px;font-size:17px}
+.cap{font:600 15px Roboto,Arial;color:#333;margin:0 0 10px 4px}
+.kbd{position:relative}
+.tb{display:flex;align-items:center;padding:2px 6px 0}
+.tb .ia{height:30px;padding:0 12px;border-radius:15px;color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;margin-right:4px;background:linear-gradient(135deg,var(--acc),#8E5CF7)}
+.tb .ic{flex:1;display:flex;justify-content:center}
+.tb svg{width:20px;height:20px;fill:var(--mod)}
+.strip{display:flex;align-items:center;padding:4px}
+.strip div{flex:1;text-align:center;font-size:17px;color:var(--txt);padding:6px 0;border-radius:8px}
+.strip .hl{background:var(--pill);font-weight:700}
+.strip i{width:1px;height:22px;background:var(--hint);opacity:.4}
+.keys{position:relative;padding:4px 3px}
+.row{display:flex;position:relative}
+.k{margin:0 3px;border-radius:var(--rad);display:flex;align-items:center;justify-content:center;position:relative;color:var(--txt);box-shadow:0 1.2px 0 var(--sh)}
+.k.c{background:linear-gradient(var(--kt),var(--kb))}
+.k.m{background:linear-gradient(var(--mt),var(--mb));color:var(--mod)}
+.k.acc{background:var(--acc)!important;color:#fff}
+.k svg{fill:currentColor}
+.sub{position:absolute;bottom:7px;font-size:10px;letter-spacing:1.5px;color:var(--hint)}
+.lang{position:absolute;right:10px;bottom:5px;font-size:10px;color:var(--hint)}.lang b{color:var(--txt);font-weight:400}
+.balloon{position:absolute;z-index:5}
+.panel{background:var(--panel);padding:4px 10px 8px;color:var(--ptxt)}
+.panel h4{font-size:15px;display:flex;justify-content:space-between;align-items:center;height:38px}
+.chips{display:flex;gap:6px;overflow:hidden;margin-bottom:6px}
+.chip{white-space:nowrap;padding:7px 12px;border-radius:16px;background:var(--field);font-size:13.5px}
+.chip.on{background:var(--acc);color:#fff}
+.box{background:var(--field);border-radius:12px;padding:9px 12px;font-size:16px;margin-bottom:6px}
+.box.in{border:1px solid var(--acc)}
+.st{font-size:12.5px;color:var(--hint);padding:2px 4px}
+.acts{display:flex;justify-content:flex-end;gap:6px;margin-top:4px}
+.pill{padding:8px 14px;border-radius:18px;background:var(--field);font-size:14px}
+.pill.p{background:var(--acc);color:#fff;font-weight:700}
+.statusbar{height:26px;color:#fff;font-size:13px;padding:5px 22px;display:flex;justify-content:space-between}
+.light .statusbar{color:#000}
+</style></head><body>
+<script>
+const T={
+ light:{bg:'#D1D3D9',kt:'#fff',kb:'#fff',mt:'#ABB0BA',mb:'#ABB0BA',sh:'#8A8C91',txt:'#000',mod:'#000',hint:'#6E7179',acc:'#0A84FF',panel:'#E4E6EA',ptxt:'#111114',field:'#fff',pill:'#EBECEF',rad:'6px',ball:'#fff'},
+ dark:{bg:'#2B2B2E',kt:'#6B6B70',kb:'#6B6B70',mt:'#46464A',mb:'#46464A',sh:'#0E0E10',txt:'#fff',mod:'#fff',hint:'#A0A0A6',acc:'#0A84FF',panel:'#1F1F22',ptxt:'#F2F2F5',field:'#3A3A3E',pill:'#505055',rad:'6px',ball:'#6B6B70'},
+ neon:{bg:'#2C2C2E',kt:'#26262A',kb:'#050506',mt:'#26262A',mb:'#050506',sh:'#000',txt:'#fff',mod:'#3DDC5A',hint:'#9A9AA0',acc:'#3DDC5A',panel:'#202022',ptxt:'#EDEDED',field:'#111113',pill:'#3A3A3E',rad:'9px',ball:'#34343A'}};
+const I={
+ ia:'M19,9l1.25,-2.75L23,5l-2.75,-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9zM11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5,-5.5L17,12L11.5,9.5z',
+ spell:'M12.45,16h2.09L9.43,3L7.57,3L2.46,16h2.09l1.12,-3h5.64l1.14,3zM6.43,11L8.5,5.48 10.57,11L6.43,11zM21.59,11.59l-8.09,8.09L9.83,16l-1.41,1.41 5.09,5.09L23,13l-1.41,-1.41z',
+ pen:'M3,17.25V21h3.75L17.81,9.94l-3.75,-3.75L3,17.25zM20.71,7.04c0.39,-0.39 0.39,-1.02 0,-1.41l-2.34,-2.34c-0.39,-0.39 -1.02,-0.39 -1.41,0l-1.83,1.83 3.75,3.75 1.83,-1.83z',
+ sum:'M3,18h12v-2H3v2zM3,6v2h18V6H3zM3,13h18v-2H3v2z',
+ tr:'M12.87,15.07l-2.54,-2.51 0.03,-0.03c1.74,-1.94 2.98,-4.17 3.71,-6.53L17,6L17,4h-7L10,2L8,2v2L1,4v1.99h11.17C11.5,7.92 10.44,9.75 9,11.35 8.07,10.32 7.3,9.19 6.69,8h-2c0.73,1.63 1.73,3.17 2.98,4.56l-5.09,5.02L4,19l5,-5 3.11,3.11 0.76,-2.04zM18.5,10h-2L12,22h2l1.12,-3h4.75L21,22h2l-4.5,-12zM15.88,17l1.62,-4.33L19.12,17h-3.24z',
+ mic:'M12,14c1.66,0 2.99,-1.34 2.99,-3L15,5c0,-1.66 -1.34,-3 -3,-3S9,3.34 9,5v6c0,1.66 1.34,3 3,3zM17.3,11c0,3 -2.54,5.1 -5.3,5.1S6.7,14 6.7,11L5,11c0,3.41 2.72,6.23 6,6.72L11,21h2v-3.28c3.28,-0.48 6,-3.3 6,-6.72h-1.7z',
+ clip:'M19,2h-4.18C14.4,0.84 13.3,0 12,0c-1.3,0 -2.4,0.84 -2.82,2L5,2c-1.1,0 -2,0.9 -2,2v16c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2L21,4c0,-1.1 -0.9,-2 -2,-2zM12,2c0.55,0 1,0.45 1,1s-0.45,1 -1,1 -1,-0.45 -1,-1 0.45,-1 1,-1zM19,20L5,20L5,4h2v3h10L17,4h2v16z',
+ gear:'M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94s-0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6 3.6,1.62 3.6,3.6 -1.62,3.6 -3.6,3.6z',
+ bk:'M22,3H7c-0.69,0 -1.23,0.35 -1.59,0.88L0,12l5.41,8.11c0.36,0.53 0.9,0.89 1.59,0.89h15c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2zM22,19H7.07L2.4,12l4.66,-7H22v14zM10.41,17L14,13.41 17.59,17 19,15.59 15.41,12 19,8.41 17.59,7 14,10.59 10.41,7 9,8.41 12.59,12 9,15.59z',
+ emo:'M15.5,8a1.5,1.5 0,1 1,0 3a1.5,1.5 0,1 1,0 -3zM8.5,8a1.5,1.5 0,1 1,0 3a1.5,1.5 0,1 1,0 -3zM11.99,2C6.47,2 2,6.48 2,12s4.47,10 9.99,10C17.52,22 22,17.52 22,12S17.52,2 11.99,2zM12,20c-4.42,0 -8,-3.58 -8,-8s3.58,-8 8,-8 8,3.58 8,8 -3.58,8 -8,8zM12,17.5c2.33,0 4.32,-1.45 5.12,-3.5H6.88c0.8,2.05 2.79,3.5 5.12,3.5z',
+ space:'M18,9v4H6V9H4v6h16V9z',
+ close:'M19,6.41L17.59,5 12,10.59 6.41,5 5,6.41 10.59,12 5,17.59 6.41,19 12,13.41 17.59,19 19,17.59 13.41,12z'};
+const svg=(n,s)=>`<svg viewBox="0 0 24 24" style="width:${s}px;height:${s}px"><path d="${I[n]}"/></svg>`;
+const shift=s=>`<svg viewBox="0 0 24 24" style="width:${s}px;height:${s}px"><path d="M12,3.2L3.2,12.6H8.2V20.2H15.8V12.6H20.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>`;
+const ch=(s,w=1)=>({t:'c',l:s,w});
+const L={
+ az:[[..."azertyuiop"].map(c=>ch(c))],
+};
+function rowsAlpha(){return[[..."azertyuiop"].map(c=>ch(c)),[..."qsdfghjklm"].map(c=>ch(c)),[{t:'shift',w:1.5},...[..."wxcvbn’"].map(c=>ch(c)),{t:'bk',w:1.5}],[{t:'m',l:'123',w:1.25},{t:'emo',w:1.25},{t:'sp',w:5},{t:'en',w:2.5}]]}
+function rowsNum(){const d=(c,s)=>({t:'n',l:c,s,w:2.5});return[[d('1',''),d('2','ABC'),d('3','DEF'),{t:'m',l:'+',w:2.5}],[d('4','GHI'),d('5','JKL'),d('6','MNO'),{t:'nsp',w:2.5}],[d('7','PQRS'),d('8','TUV'),d('9','WXYZ'),{t:'bk',w:2.5}],[{t:'m',l:'ABC',w:2.5},d('0','+'),{t:'m',l:'*',w:2.5},{t:'en',w:2.5}]]}
+function keyboard(o){
+ const W=o.w||370,unit=(W-6)/10,rh=o.rh||54,gy=o.gy??11, rows=o.num?rowsNum():rowsAlpha();
+ let h=`<div class="keys" style="background:var(--bg)">`;
+ rows.forEach((r,ri)=>{
+  const ind=(!o.num&&false)?0:0;
+  h+=`<div class="row" style="height:${rh}px;padding:${gy/2}px 0">`;
+  r.forEach(k=>{
+   const w=k.w*unit-6, kh=rh-gy; let cls='k c',inner='';
+   const st=`width:${w}px;height:${kh}px`;
+   if(k.t==='c'){inner=`<span style="font-size:${kh*.52}px">${o.caps&&ri==0?k.l.toUpperCase():k.l}</span>`;
+     if(o.press===k.l){cls+=' pressed';inner+=balloon(k.l,w,kh,o)}}
+   else if(k.t==='n'){inner=`<span style="font-size:${kh*.5}px;margin-top:${k.s?-kh*.18:0}px">${k.l}</span>`+(k.s?`<span class="sub">${k.s}</span>`:'')}
+   else if(k.t==='shift'){cls='k m';inner=shift(kh*.5)}
+   else if(k.t==='bk'){cls='k m';inner=svg('bk',kh*.46)}
+   else if(k.t==='emo'){cls='k m';inner=svg('emo',kh*.5)}
+   else if(k.t==='sp'){inner=`<span class="lang"><b>FR</b> EN</span>`}
+   else if(k.t==='nsp'){cls='k m';inner=svg('space',kh*.42)}
+   else if(k.t==='en'){cls='k m'+(o.enter?' acc':'');inner=`<span style="font-size:${kh*.34}px">${o.enter||'retour'}</span>`}
+   else {cls='k m';inner=`<span style="font-size:${kh*(k.l.length>1?.36:.46)}px">${k.l}</span>`}
+   h+=`<div class="${cls}" style="${st}">${inner}</div>`});
+  h+=`</div>`});
+ return h+`</div>`}
+function balloon(l,w,kh,o){const bw=Math.max(w*1.55,46),bh=kh*1.15,x=(w-bw)/2;
+ return `<div class="balloon" style="left:${x}px;top:${-bh-2}px;width:${bw}px;height:${bh}px;background:var(--ball);border-radius:11px;box-shadow:0 2px 6px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;font-size:${bh*.62}px">${l}</div><div class="balloon" style="left:0;top:-6px;width:${w}px;height:10px;background:var(--ball)"></div>`}
+function toolbar(h=46){return `<div class="tb" style="height:${h}px"><div class="ia">✦ IA</div>${['spell','pen','sum','tr','mic','clip','gear'].map(n=>`<div class="ic">${svg(n,20)}</div>`).join('')}</div>`}
+function strip(a,h=44){return `<div class="strip" style="height:${h}px">${a.map((s,i)=>(i?'<i></i>':'')+`<div class="${i==1&&s?'hl':''}">${s}</div>`).join('')}</div>`}
+function vars(t){return Object.entries(T[t]).map(([k,v])=>`--${k}:${v}`).join(';')}
+function phone(id,theme,cap,app,kb,cls=''){document.body.insertAdjacentHTML('beforeend',`<div id="${id}"><div class="cap">${cap}</div><div class="phone ${cls} ${theme==='light'?'light':''}" style="${vars(theme)};background:${theme==='light'?'#fff':'#000'}"><div class="statusbar"><span>9:41</span><span>●●● 74%</span></div><div class="app" style="color:${theme==='light'?'#111':'#eee'}">${app}</div><div class="kbd" style="background:var(--bg)">${kb}</div><div style="height:18px;background:var(--bg)"></div></div></div>`)}
+const msg=(t,dark)=>`<div style="font-weight:700;font-size:19px;margin-bottom:14px">Messages</div><div style="background:${dark?'#1c1c1e':'#f2f2f7'};border-radius:20px;padding:12px 16px;min-height:52px">${t}<span style="color:#0A84FF">|</span></div>`;
+// 1 clair
+phone('p1','light','1 · iPhone clair — frappe, bulle, suggestions',msg('Je vais arriver dans 5 minutes, est-ce que tu es d’acc'),toolbar()+strip(['«d’acc»','d’accord','d’accords'])+keyboard({press:'r'}));
+// 2 sombre
+phone('p2','dark','2 · iPhone sombre',msg('Bonjour, merci pour le devis. Nous validons la commande',1),toolbar()+strip(['«commande»','commandes','commander'])+keyboard({}));
+// 3 pavé
+phone('p3','light','3 · Pavé numérique (Wave, Orange Money, banques)',`<div style="font-weight:700;font-size:26px;margin-bottom:16px">Transfert</div><div style="font-weight:600;margin-bottom:8px">Montant</div><div style="border:1.5px solid #b8975a;border-radius:10px;padding:14px;text-align:right;font-size:22px">25 000<span style="color:#0A84FF">|</span> <b>F</b></div>`,keyboard({num:1,rh:64,gy:9,enter:'OK'}));
+// 4 traducteur
+phone('p4','neon','4 · Traducteur en direct (thème Néon)',msg('',1),toolbar()+`<div class="panel"><h4>Traducteur ${svg('close',20)}</h4><div class="chips"><div class="chip">⇪ Traduire le champ</div><div class="chip on">🇬🇧 Anglais</div><div class="chip">🇫🇷 Français</div><div class="chip">🇪🇸 Espagnol</div><div class="chip">🇸🇳 Wolof</div></div><div class="box in">Nous confirmons l’expédition du conteneur vendredi│</div><div class="box" style="height:62px">We confirm the container will ship on Friday.</div><div class="st">✓ Prêt · traduction en direct</div><div class="acts"><div class="pill">↻</div><div class="pill">Copier</div><div class="pill p">Insérer ➤</div></div></div>`+keyboard({}));
+// 5 IA correction
+phone('p5','light','5 · Corriger / Reformuler (barre IA)',msg('Bonjour, je vous envoi le devis demain matin comme convenu, merci de me confirmez la quantiter.'),toolbar()+`<div class="panel"><h4>Reformuler ${svg('close',20)}</h4><div class="chips"><div class="chip on">Professionnel</div><div class="chip">Amical</div><div class="chip">Concis</div><div class="chip">Formel</div><div class="chip">Persuasif</div></div><div class="box" style="height:150px">Bonjour,<br>Comme convenu, je vous transmettrai le devis demain matin. Pourriez-vous me confirmer la quantité souhaitée ?<br>Merci par avance.</div><div class="st">✓ Prêt</div><div class="acts"><div class="pill">↻</div><div class="pill">Copier</div><div class="pill">Insérer</div><div class="pill p">Remplacer</div></div></div>`);
+// 6 paysage
+phone('p6','light','6 · Paysage compact : le texte reste visible',`<div style="background:#f2f2f7;border-radius:18px;padding:10px 14px">Merci, je vous rappelle dans l’après-midi<span style="color:#0A84FF">|</span></div>`,toolbar(36)+strip(['«après-midi»','après',''],32)+keyboard({w:740,rh:38,gy:6}),'land');
+</script></body></html>
