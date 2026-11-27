@@ -51,7 +51,10 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
     private var builtLand = false
     private var numberField = false
     private lateinit var toolbar: View
-    private val landscape get() = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    /** Téléphone à l'horizontale (écran bas) : clavier compact. Les tablettes gardent la taille normale. */
+    private val landscape get() = resources.configuration.let {
+        (it.orientation == Configuration.ORIENTATION_LANDSCAPE || it.screenWidthDp > it.screenHeightDp) && it.screenHeightDp < 600
+    }
 
     private var root: LinearLayout? = null
     private lateinit var panelHost: FrameLayout
@@ -113,6 +116,15 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
     }
 
     override fun onEvaluateFullscreenMode(): Boolean = false
+
+    /** Rotation de l'écran : on reconstruit le clavier tout de suite (compact en paysage). */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (root != null && landscape != builtLand) {
+            setInputView(onCreateInputView())
+            currentInputEditorInfo?.let { if (isInputViewShown) onStartInputView(it, true) }
+        }
+    }
 
     override fun onCreateInputView(): View {
         skin = Themes.get(prefs.theme)
