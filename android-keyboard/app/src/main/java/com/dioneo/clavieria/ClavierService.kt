@@ -6,6 +6,7 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.inputmethodservice.InputMethodService
@@ -47,6 +48,10 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
     private var skin = Themes.get(0)
     private var builtTheme = -1
     private var builtHeight = -1
+    private var builtLand = false
+    private var numberField = false
+    private lateinit var toolbar: View
+    private val landscape get() = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     private var root: LinearLayout? = null
     private lateinit var panelHost: FrameLayout
@@ -113,21 +118,24 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
         skin = Themes.get(prefs.theme)
         builtTheme = prefs.theme
         builtHeight = prefs.heightPct
+        builtLand = landscape
         val r = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundColor(skin.bg)
             clipChildren = false
             clipToPadding = false
         }
-        r.addView(buildToolbar(), LinearLayout.LayoutParams(MATCH, dp(46)))
+        toolbar = buildToolbar()
+        r.addView(toolbar, LinearLayout.LayoutParams(MATCH, dp(if (builtLand) 36 else 46)))
         panelHost = FrameLayout(this).apply { visibility = View.GONE; setBackgroundColor(skin.panel) }
         r.addView(panelHost, LinearLayout.LayoutParams(MATCH, WRAP))
         strip = buildStrip()
-        r.addView(strip, LinearLayout.LayoutParams(MATCH, dp(44)))
+        r.addView(strip, LinearLayout.LayoutParams(MATCH, dp(if (builtLand) 32 else 44)))
         kbHost = FrameLayout(this).apply { clipChildren = false; clipToPadding = false }
         kb = KeyboardView(this, this).apply {
             skin = this@ClavierService.skin
             heightPct = prefs.heightPct
+            compact = builtLand
         }
         kb.setLanguage(prefs.lang)
         kbHost.addView(kb, FrameLayout.LayoutParams(MATCH, WRAP))
@@ -147,7 +155,7 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
 
     override fun onStartInputView(info: EditorInfo, restarting: Boolean) {
         super.onStartInputView(info, restarting)
-        if (root == null || prefs.theme != builtTheme || prefs.heightPct != builtHeight) setInputView(onCreateInputView())
+        if (root == null || prefs.theme != builtTheme || prefs.heightPct != builtHeight || landscape != builtLand) setInputView(onCreateInputView())
         sensitive = isSensitive(info)
         noLearn = sensitive || (info.imeOptions and EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) != 0
         kb.smartTouch = prefs.smartTouch
@@ -156,10 +164,14 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
         hideOverlay()
         closePanel()
         val cls = info.inputType and InputType.TYPE_MASK_CLASS
-        kb.setMode(
-            if (cls == InputType.TYPE_CLASS_NUMBER || cls == InputType.TYPE_CLASS_PHONE || cls == InputType.TYPE_CLASS_DATETIME) KMode.SYM
-            else KMode.ALPHA
-        )
+        // Montants, numéros, codes (Wave, Orange Money, banques) : pavé numérique grand format, sans barre IA
+        numberField = cls == InputType.TYPE_CLASS_NUMBER || cls == InputType.TYPE_CLASS_PHONE || cls == InputType.TYPE_CLASS_DATETIME
+        kb.numberField = numberField
+        kb.phonePad = cls == InputType.TYPE_CLASS_PHONE
+        if (numberField) kb.setMode(KMode.ALPHA)
+        kb.setMode(if (numberField) KMode.NUM else KMode.ALPHA)
+        toolbar.visibility = if (numberField) View.GONE else View.VISIBLE
+        strip.visibility = if (numberField) View.GONE else View.VISIBLE
         applyEnterKey(info)
         kb.setShift(Shift.OFF)
         lastCorrection = null
@@ -252,7 +264,7 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
             val tv = TextView(this).apply {
                 gravity = Gravity.CENTER
                 setTextColor(skin.text)
-                textSize = 17f
+                textSize = if (builtLand) 15f else 17f
                 isSingleLine = true
                 ellipsize = TextUtils.TruncateAt.END
             }
@@ -644,7 +656,7 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
             panelHost.removeAllViews()
             panelHost.visibility = View.GONE
             kbHost.visibility = View.VISIBLE
-            strip.visibility = View.VISIBLE
+            strip.visibility = if (numberField) View.GONE else View.VISIBLE
             kb.setShift(Shift.OFF)
             refreshPrefix()
             updateShift()
@@ -719,7 +731,7 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
             setTextIsSelectable(false)
         }
         sc.addView(resultBox)
-        col.addView(sc, LinearLayout.LayoutParams(MATCH, dp(if (internal != null) 78 else 176)))
+        col.addView(sc, LinearLayout.LayoutParams(MATCH, dp(if (builtLand) (if (internal != null) 48 else 96) else if (internal != null) 78 else 176)))
         statusBox = TextView(this).apply {
             textSize = 12.5f
             setTextColor(skin.hint)

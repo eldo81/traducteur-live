@@ -58,6 +58,11 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
     var enterAccent = false
         set(v) { field = v; invalidate() }
     var smartTouch = true
+    /** Paysage : touches plus basses pour laisser voir le texte. */
+    var compact = false
+        set(v) { field = v; requestLayout() }
+    /** Champ numérique : la touche 123 ramène au pavé numérique. */
+    var phonePad = false
     var showPreview = true
     var language = "fr"
         private set
@@ -71,12 +76,15 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
     private fun dp(v: Float) = v * density
     private val uiHandler = Handler(Looper.getMainLooper())
 
-    private val rowH get() = dp(54f) * heightPct / 100f
+    private val rowH get() = dp(
+        if (mode == KMode.NUM) (if (compact) 42f else 64f) else (if (compact) 38f else 54f)
+    ) * heightPct / 100f
     private val padTop get() = dp(4f)
     private val padBottom get() = dp(4f)
     private val padH get() = dp(3f)
     private val gapX get() = dp(6f)
-    private val gapY get() = dp(11f) * heightPct / 100f
+    private val gapY get() = dp(if (compact) 6f else if (mode == KMode.NUM) 9f else 11f) * heightPct / 100f
+    var numberField = false
 
     // ---------- Peinture ----------
     private val keyPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -150,8 +158,10 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
             KMode.ALPHA -> Layouts.alpha(language)
             KMode.SYM -> Layouts.sym(language)
             KMode.SYM2 -> Layouts.sym2(language)
+            KMode.NUM -> Layouts.num(language, phonePad)
         }
         ptrs.clear()
+        requestLayout()
         layoutKeys()
         invalidateAll()
     }
@@ -230,14 +240,16 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
         }
         for (p in ptrs.values) {
             if (p.popup != null) drawPopup(canvas, p)
-            else if (showPreview && p.key.isChar && !p.handled) drawBalloon(canvas, p.key)
+            else if (showPreview && mode != KMode.NUM && p.key.isChar && !p.handled) drawBalloon(canvas, p.key)
         }
     }
 
     private fun drawKey(c: Canvas, k: Key, ri: Int, pressed: Boolean) {
         val r = k.rect
         val rad = dp(skin.radiusDp)
-        val isMod = k.type != KType.CHAR && k.type != KType.SPACE
+        val numPad = mode == KMode.NUM
+        val isMod = (k.type != KType.CHAR && k.type != KType.SPACE) || (numPad && k.type == KType.SPACE) ||
+            (numPad && k.isChar && !k.label[0].isDigit())
         val shiftOn = k.type == KType.SHIFT && shift != Shift.OFF
         val accentFill = k.type == KType.ENTER && enterAccent
 
@@ -249,7 +261,7 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
             accentFill -> keyPaint.color = if (pressed) skin.pressedMod else skin.accent
             pressed && isMod -> keyPaint.color = skin.pressedMod
             pressed && k.type == KType.SPACE -> keyPaint.color = skin.pressedChar
-            pressed && !showPreview -> keyPaint.color = skin.pressedChar
+            pressed && (!showPreview || numPad) -> keyPaint.color = if (isMod) skin.pressedMod else skin.pressedChar
             shiftOn -> keyPaint.color = skin.pressedMod
             else -> {
                 keyPaint.color = if (isMod) skin.modBottom else skin.keyBottom
@@ -270,7 +282,22 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
             else -> skin.text
         }
         when (k.type) {
-            KType.CHAR -> {
+            KType.CHAR -> if (numPad) {
+                // Gros chiffres façon pavé de téléphone, lettres en petit dessous
+                labelPaint.color = if (isMod) skin.modText else skin.text
+                labelPaint.typeface = fontRegular
+                labelPaint.textSize = h * if (k.label[0].isDigit()) 0.5f else 0.46f
+                val hasSub = !k.sub.isNullOrEmpty()
+                drawCentered(c, k.label, r.centerX(), r.centerY() - if (hasSub) h * 0.1f else 0f, labelPaint)
+                if (hasSub) {
+                    smallPaint.typeface = fontRegular
+                    smallPaint.color = skin.hint
+                    smallPaint.textSize = h * 0.17f
+                    smallPaint.letterSpacing = 0.12f
+                    drawCentered(c, k.sub!!, r.centerX(), r.centerY() + h * 0.27f, smallPaint)
+                    smallPaint.letterSpacing = 0f
+                }
+            } else {
                 val label = display(k.label)
                 labelPaint.color = skin.text
                 labelPaint.typeface = fontRegular
@@ -294,7 +321,9 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
                 labelPaint.textSize = h * 0.34f
                 drawCentered(c, enterLabel, r.centerX(), r.centerY(), labelPaint)
             }
-            KType.SPACE -> {
+            KType.SPACE -> if (numPad) {
+                drawIcon(c, R.drawable.ic_space, r.centerX(), r.centerY(), h * 0.42f, fg)
+            } else {
                 // Indicateur bilingue « FR EN » discret en bas à droite, comme iOS 17
                 smallPaint.typeface = fontLight
                 smallPaint.textSize = h * 0.2f
@@ -500,7 +529,7 @@ class KeyboardView(context: Context, private val listener: Listener) : View(cont
                 }
                 KType.SPACE -> if (!p.trackpad) listener.onSpace()
                 KType.ENTER -> listener.onEnter()
-                KType.TO_SYM -> setMode(KMode.SYM)
+                KType.TO_SYM -> setMode(if (numberField && mode == KMode.ALPHA) KMode.NUM else KMode.SYM)
                 KType.TO_SYM2 -> setMode(KMode.SYM2)
                 KType.TO_ALPHA -> setMode(KMode.ALPHA)
                 KType.EMOJI -> listener.onEmoji()

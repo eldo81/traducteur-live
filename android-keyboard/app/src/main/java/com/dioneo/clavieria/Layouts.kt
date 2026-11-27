@@ -3,13 +3,14 @@ package com.dioneo.clavieria
 import android.graphics.RectF
 
 enum class KType { CHAR, SHIFT, BACKSPACE, ENTER, SPACE, TO_SYM, TO_ALPHA, TO_SYM2, EMOJI }
-enum class KMode { ALPHA, SYM, SYM2 }
+enum class KMode { ALPHA, SYM, SYM2, NUM }
 
 class Key(
     val type: KType,
     val label: String = "",
     val width: Float = 1f,
     val popup: String? = null,
+    val sub: String? = null,
 ) {
     val rect = RectF()
     var hitLeft = 0f
@@ -64,6 +65,19 @@ object Layouts {
         KRow(listOf(Key(KType.TO_SYM, "123", 1.5f)) + chars(".,?!’", 1.4f) + Key(KType.BACKSPACE, "", 1.5f)),
         bottom(Key(KType.TO_ALPHA, "ABC", 1.25f)),
     )
+
+    /** Pavé numérique grand format (montants, téléphones, codes) pour les applis wallet et bancaires. */
+    fun num(lang: String, phone: Boolean): List<KRow> {
+        fun d(c: String, sub: String, pop: String? = null) = Key(KType.CHAR, c, 2.5f, pop, sub)
+        val dec = if (lang == "en") "." else ","
+        val decPop = if (phone) "*#,." else if (lang == "en") "," else "."
+        return listOf(
+            KRow(listOf(d("1", ""), d("2", "ABC"), d("3", "DEF"), Key(KType.CHAR, if (phone) "+" else "-", 2.5f, if (phone) "-()" else "+")) ),
+            KRow(listOf(d("4", "GHI"), d("5", "JKL"), d("6", "MNO"), Key(KType.SPACE, "", 2.5f))),
+            KRow(listOf(d("7", "PQRS"), d("8", "TUV"), d("9", "WXYZ"), Key(KType.BACKSPACE, "", 2.5f))),
+            KRow(listOf(Key(KType.TO_ALPHA, "ABC", 2.5f), d("0", "+", "+"), Key(KType.CHAR, if (phone) "*" else dec, 2.5f, decPop), Key(KType.ENTER, "", 2.5f))),
+        )
+    }
 
     /** Touches voisines (pour la correction automatique des fautes de frappe). */
     fun neighbours(lang: String): Map<Char, Set<Char>> {
