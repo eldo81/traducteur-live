@@ -1,0 +1,51 @@
+name: Dioneo Call — build APK
+
+on:
+  push:
+    paths:
+      - "voip-android/**"
+      - ".github/workflows/voip-android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: voip-android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk out/DioneoCall-1.0.${{ github.run_number }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DioneoCall-apk
+          path: voip-android/out/*.apk
+
+      - name: Publier en pré-release GitHub (téléchargement direct depuis le téléphone)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dioneo-call-v1.0.${{ github.run_number }}
+          name: Dioneo Call 1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          files: voip-android/out/*.apk
+          body: |
+            APK Android de Dioneo Call (appels VoIP vers fixes et mobiles via votre opérateur SIP).
+            Installation : ouvrir ce lien sur le téléphone → télécharger l'APK → autoriser « sources inconnues ».
