@@ -177,7 +177,7 @@ const Headset = (() => {
     S.mode = mode;
     renderModeButtons();
     el.stop.disabled = false;
-    el.liveDir.textContent = mode === 'auto' ? 'Écouteurs — deux sens simultanés' : (mode === 'listen' ? 'Anglais → Français (écouteurs)' : 'Français → Anglais (vers l’appel)');
+    el.liveDir.textContent = mode === 'auto' ? 'Écouteurs — deux sens simultanés' : (mode === 'listen' ? dirLabel('listen') + ' (écouteurs)' : dirLabel('speak') + ' (vers l’appel)');
 
     // Ferme les canaux qui ne servent plus, ouvre ceux qui manquent
     Object.keys(channels).forEach((k) => { if (!want.includes(k)) closeChannel(k); });
@@ -220,7 +220,7 @@ const Headset = (() => {
     const ch = {
       dir, pc: null, dc: null, stream: null, audio: null, ready: null,
       entries: new Map(), respToEntry: new Map(), pending: [], serverItems: [],
-      silenced: new Set(), gen: S.gen,
+      silenced: new Set(), typed: [], gen: S.gen,
     };
     channels[dir] = ch;
     // Promesse partagée : un second démarrage attend ce canal au lieu de le dupliquer
@@ -305,11 +305,11 @@ const Headset = (() => {
     const s = S.settings;
     if (dir === 'listen') {
       base.output_modalities = s.hsHearFr ? ['audio'] : ['text'];
-      base.instructions = BASE_INSTRUCTIONS + '\n' + MODE_INSTRUCTIONS.listen;
+      base.instructions = baseInstructions() + '\n' + modeInstructions('listen');
       delete base.audio.input.noise_reduction; // signal numérique propre venant du câble : pas de filtrage
     } else {
       base.output_modalities = ['audio'];
-      base.instructions = BASE_INSTRUCTIONS + '\n' + MODE_INSTRUCTIONS.speak +
+      base.instructions = baseInstructions() + '\n' + modeInstructions('speak') +
         '\nThe listener hears you through a phone or video call.' + (ACCENTS[s.accent] || '');
       base.audio.input.noise_reduction = { type: 'near_field' }; // micro proche de la bouche
     }
@@ -338,7 +338,7 @@ const Headset = (() => {
   function entryOf(ch, itemId) {
     let e = ch.entries.get(itemId);
     if (!e) {
-      e = { id: ch.dir[0] + '_' + itemId, t: Date.now(), mode: ch.dir, src: '', dst: '', dir: ch.dir === 'listen' ? 'EN→FR' : 'FR→EN' };
+      e = { id: ch.dir[0] + '_' + itemId, t: Date.now(), mode: ch.dir, src: '', dst: '', dir: dirOf(ch.dir === 'listen' ? 'in' : 'out') };
       ch.entries.set(itemId, e);
     }
     return e;
@@ -374,6 +374,13 @@ const Headset = (() => {
 
       case 'response.created': {
         const rid = ev.response && ev.response.id;
+        if (isTypedResponse(ev.response)) {
+          const itemId = 'typed_' + rid;
+          ch.respToEntry.set(rid, itemId);
+          const e = entryOf(ch, itemId);
+          e.src = ch.typed.shift() || ''; e.dst = '';
+          break;
+        }
         const itemId = ch.pending.shift() || ('r_' + rid);
         ch.respToEntry.set(rid, itemId);
         entryOf(ch, itemId).dst = '';
@@ -480,5 +487,14 @@ const Headset = (() => {
     el.micLevel.style.width = '0';
   }
 
-  return { supported, populate, start, stop, isActive, testOutput, testInputs, _channels: channels, _onEvent: onEvent };
+  /** Phrase tapée : traduite et envoyée uniquement vers l'appel (canal Parle). */
+  function sendTyped(text) {
+    const ch = channels.speak;
+    if (!ch || !ch.dc || ch.dc.readyState !== 'open') return false;
+    ch.typed.push(text);
+    sendTo(ch, typedRequest(text));
+    return true;
+  }
+
+  return { supported, populate, start, stop, isActive, testOutput, testInputs, sendTyped, _channels: channels, _onEvent: onEvent };
 })();

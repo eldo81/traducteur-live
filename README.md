@@ -1,6 +1,6 @@
-# Traducteur Live — interprète vocal EN ⇄ FR
+# Traducteur Live — interprète vocal multilingue
 
-Application web (PWA) d'interprétation simultanée anglais ↔ français pour les appels WhatsApp, Zoom, Teams ou Meet. Elle tourne sur un **2ᵉ appareil** posé à côté du haut-parleur du téléphone d'appel : Android empêche une app de capter l'audio d'un appel en cours sur le même téléphone.
+Application web (PWA) d'interprétation simultanée pour les appels WhatsApp, Zoom, Teams ou Meet. Elle tourne sur un **2ᵉ appareil** posé à côté du haut-parleur du téléphone d'appel : Android empêche une app de capter l'audio d'un appel en cours sur le même téléphone.
 
 Moteur : **OpenAI Realtime API en WebRTC** (audio → audio en direct, sans serveur intermédiaire). Code HTML/CSS/JS vanilla, aucun build.
 
@@ -10,6 +10,26 @@ Moteur : **OpenAI Realtime API en WebRTC** (audio → audio en direct, sans serv
 | **Parle** (FR → EN) | Vous parlez français, l'app **prononce** la traduction anglaise à voix haute ; le téléphone d'appel la transmet. |
 | **Auto** | Détecte la langue de chaque phrase et traduit dans l'autre sens. L'anglais est toujours prononcé ; le français seulement si l'option « Lire la traduction française » est activée. |
 | **Anti-écho** | Le micro est coupé pendant que l'app parle (half-duplex), pour qu'elle ne retraduise pas sa propre voix. |
+
+
+## Nouveautés v1.8 — ce qui manque à Transync AI et aux traducteurs d'appels grand public
+
+| Point faible courant | Réponse de Traducteur Live |
+|---|---|
+| Abonnement mensuel et minutes plafonnées | Paiement à l'usage sur votre propre clé OpenAI, sans abonnement ni quota de minutes. Le compteur `in · out · min` suit la session. |
+| Noms propres, produits et jargon mal traduits | **Glossaire personnel** (Réglages) : `terme = traduction` impose une traduction, un nom seul est conservé tel quel. Il est injecté dans les consignes de l'interprète et dans la transcription. Le vocabulaire commercial (Incoterms, L/C, BL, FCFA…) est intégré d'office. |
+| L'interlocuteur entend votre langue puis la traduction (mode haut-parleur) | **Taper au lieu de parler** : saisissez la phrase dans la barre au-dessus des modes ; seule la traduction est prononcée. Recommandé pour les prix, quantités et références : zéro erreur de reconnaissance vocale. |
+| Réponses lentes pour les phrases répétitives | **Phrases rapides ⚡** : un appui suffit (annonce de l'interprète, « répétez plus lentement », « envoyez l'offre par e-mail »…). Liste personnalisable dans les Réglages. |
+| Compte rendu générique, rien d'exploitable | **Compte rendu IA** orienté affaires : résumé, chiffres et conditions (prix, Incoterms, délais, paiement), décisions, actions qui/quoi/quand, risques, **incohérences de chiffres entre l'original et la traduction**, plus un e-mail de suivi rédigé dans la langue de l'interlocuteur. |
+| Données d'appel stockées sur les serveurs de l'éditeur | Aucun serveur intermédiaire : l'audio va directement à OpenAI, et l'historique reste dans votre navigateur. |
+| EN ⇄ FR seulement (version précédente) | **12 langues** combinables : français, anglais, espagnol, portugais, allemand, néerlandais, italien, arabe, chinois mandarin, russe, turc, japonais. Le changement s'applique à chaud, même en cours d'appel. |
+
+**Compte rendu** : bouton *Compte rendu IA* dans la barre de l'historique → *Générer*. Par défaut, seul le dernier appel est résumé (échanges espacés de moins de 20 min) ; cochez *Tout l'historique* pour tout inclure. Le modèle (par défaut `gpt-5-mini`) se règle dans les Réglages ; s'il est refusé, l'app essaie `gpt-4.1-mini` puis `gpt-4o-mini`. Coût : quelques centimes par compte rendu.
+
+**Limites à connaître**
+- La qualité dépend du modèle OpenAI pour chaque langue : excellente en anglais, espagnol, portugais, allemand, néerlandais et italien ; bonne en arabe standard, chinois et russe ; les dialectes (darija, wolof) ne sont pas pris en charge de façon fiable.
+- En mode Auto, la langue de chaque phrase est devinée parmi les deux langues de la paire. Avec deux langues proches (espagnol/portugais), préférez les modes Écoute et Parle.
+- L'extension Chrome (`extension/`) reste en anglais ⇄ français.
 
 ---
 
@@ -120,6 +140,10 @@ Installation et mode d'emploi : [extension.html](extension.html). Téléchargeme
 | Transcription | Affiche le texte original : `gpt-live-transcribe` (temps réel, par défaut), `gpt-transcribe` (plus précis) ou désactivée. Les deux premiers reçoivent une liste de termes commerciaux (Incoterms, L/C, BL, FCFA…) pour mieux les reconnaître. |
 | Lecture FR | Lit à voix haute la traduction française (Écoute et Auto). |
 | Anti-écho | Coupe le micro pendant que l'app parle. |
+| Ma langue / Interlocuteur | Paire de langues parmi 12. Appliquée à chaud. |
+| Glossaire personnel | Une ligne par terme : `terme = traduction` ou nom à garder tel quel (80 lignes max). |
+| Phrases rapides | Une phrase par ligne, dans votre langue. Vide = liste par défaut. |
+| Modèle du compte rendu | `gpt-5-mini` par défaut, avec repli automatique. |
 
 ## 6. Structure du dépôt
 
@@ -135,7 +159,7 @@ icons/          Icônes de l'application
 .nojekyll       Désactive le traitement Jekyll de GitHub Pages
 ```
 
-Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.7.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
+Après une modification du code, incrémentez `VERSION` dans `sw.js` (actuellement `tl-v1.8.0`) pour que les appareils déjà installés récupèrent la nouvelle version.
 
 ## 7. Dépannage
 

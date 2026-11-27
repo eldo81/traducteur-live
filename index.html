@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0f14">
-  <meta name="description" content="Interprète vocal simultané anglais ↔ français (OpenAI Realtime).">
+  <meta name="description" content="Interprète vocal simultané multilingue pour appels d'affaires (OpenAI Realtime).">
   <title>Traducteur Live</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -45,12 +45,23 @@
       <span>Historique <span id="histCount" class="muted">(0)</span></span>
       <span class="muted" id="usage"></span>
       <div class="history-actions">
+        <button id="btnSummary" class="small-btn accent">Compte rendu IA</button>
         <button id="btnCopy" class="small-btn">Copier</button>
         <button id="btnExport" class="small-btn">Export .txt</button>
         <button id="btnClear" class="small-btn danger">Effacer</button>
       </div>
     </div>
     <ol id="history" class="history"></ol>
+  </section>
+
+  <!-- ===== Taper au lieu de parler + phrases rapides ===== -->
+  <section class="typed">
+    <form id="typedForm" class="typed-row" autocomplete="off">
+      <button type="button" id="btnPhrases" class="small-btn" aria-expanded="false" aria-controls="phraseChips" title="Phrases rapides">⚡</button>
+      <input id="typedInput" type="text" enterkeyhint="send" placeholder="Tapez une phrase : l'app la prononce traduite">
+      <button type="submit" class="small-btn primary" aria-label="Prononcer la traduction">➤</button>
+    </form>
+    <div id="phraseChips" class="chips" hidden></div>
   </section>
 
   <!-- ===== Commandes principales ===== -->
@@ -87,10 +98,38 @@
         <span id="keyResult" class="muted"></span>
       </div>
 
+      <div class="row two">
+        <label>Ma langue
+          <select id="setMyLang"></select>
+        </label>
+        <label>Interlocuteur
+          <select id="setTheirLang"></select>
+        </label>
+      </div>
+      <small>Changement appliqué à chaud, même en cours d'appel.</small>
+
+      <label>Glossaire personnel (une ligne par terme)
+        <textarea id="setGlossary" rows="4" spellcheck="false" placeholder="Dioneo&#10;anacarde = cashew nuts&#10;noix de cajou = cashew kernels&#10;Port autonome de Dakar"></textarea>
+        <small>« terme = traduction » impose une traduction ; un nom seul est gardé tel quel (société, marque, produit, personne). Aussi transmis à la transcription pour mieux reconnaître ces mots.</small>
+      </label>
+
+      <label>Phrases rapides (une par ligne, dans votre langue)
+        <textarea id="setPhrases" rows="4" placeholder="Vide = liste par défaut (annonce de l'interprète, répéter plus lentement, envoyer l'offre par e-mail…)"></textarea>
+        <small>Bouton ⚡ au-dessus des modes : un appui et la phrase est prononcée traduite.</small>
+      </label>
+
+      <label>Modèle du compte rendu
+        <input type="text" id="setSummaryModel" list="summaryModels" spellcheck="false" placeholder="gpt-5-mini">
+        <datalist id="summaryModels">
+          <option value="gpt-5-mini"><option value="gpt-5"><option value="gpt-4.1-mini"><option value="gpt-4o-mini">
+        </datalist>
+        <small>Si le modèle est refusé, l'app essaie gpt-5-mini, puis gpt-4.1-mini, puis gpt-4o-mini.</small>
+      </label>
+
       <label>Sortie audio
         <select id="setOutput">
           <option value="speaker">Haut-parleur — appareil posé à côté du téléphone d'appel</option>
-          <option value="headset">Écouteurs + PC — discret, l'interlocuteur n'entend que l'anglais</option>
+          <option value="headset">Écouteurs + PC — discret, l'interlocuteur n'entend que la traduction</option>
         </select>
       </label>
       <small>Meet, Teams ou Zoom dans Chrome sans rien installer d'autre : <a href="extension.html" target="_blank" rel="noopener" class="hs-guide">extension Interprète Live ↗</a></small>
@@ -105,14 +144,14 @@
           <select id="setHsMicIn"></select>
           <small>Micro du PC ou micro USB conseillé (le micro Bluetooth dégrade le son des écouteurs).</small>
         </label>
-        <label>Mes écouteurs (traduction française)
+        <label>Mes écouteurs (traduction dans ma langue)
           <select id="setHsEarOut"></select>
         </label>
-        <label>Vers l'appel (traduction anglaise)
+        <label>Vers l'appel (traduction pour l'interlocuteur)
           <select id="setHsCallOut"></select>
           <small>Windows : « CABLE-A Input » · Mac : « BlackHole 16ch »</small>
         </label>
-        <label class="check"><input type="checkbox" id="setHsHearFr"> Lire la traduction française dans mes écouteurs (sinon sous-titres seuls)</label>
+        <label class="check"><input type="checkbox" id="setHsHearFr"> Lire la traduction dans mes écouteurs (sinon sous-titres seuls)</label>
         <label class="check"><input type="checkbox" id="setHsMonitor"> Entendre la voix originale de l'interlocuteur en fond (20 %)</label>
         <div id="hsWarn" class="hs-warn"></div>
         <div class="hs-tests">
@@ -194,12 +233,27 @@
         </select>
       </label>
 
-      <label class="check"><input type="checkbox" id="setSpeakFr"> Lire à voix haute la traduction française (Écoute / Auto) — utile avec des écouteurs</label>
+      <label class="check"><input type="checkbox" id="setSpeakFr"> Lire à voix haute la traduction dans ma langue (Écoute / Auto) — utile avec des écouteurs</label>
       <label class="check"><input type="checkbox" id="setHalfDuplex"> Anti-écho : couper le micro pendant que l'app parle</label>
 
       <div class="dialog-actions">
         <button type="button" class="small-btn" onclick="this.closest('dialog').close('cancel')">Fermer</button>
         <button value="save" id="btnSaveSettings" class="primary">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===== Compte rendu IA ===== -->
+  <dialog id="summaryDlg">
+    <form method="dialog">
+      <h2>Compte rendu de l'appel</h2>
+      <label class="check"><input type="checkbox" id="sumAll"> Tout l'historique (sinon : dernier appel seulement)</label>
+      <pre id="sumOut" class="sum-out"></pre>
+      <div class="dialog-actions">
+        <button type="button" id="btnSumCopy" class="small-btn">Copier</button>
+        <button type="button" id="btnSumExport" class="small-btn">Export .txt</button>
+        <button type="button" class="small-btn" onclick="this.closest('dialog').close()">Fermer</button>
+        <button type="button" id="btnSumGo" class="primary">Générer</button>
       </div>
     </form>
   </dialog>

@@ -214,3 +214,41 @@ dialog label.check { min-height: 44px; align-items: center; }
 .hs-meters { width: 100%; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
 .hs-meters[hidden] { display: none; }
 .meter.wide { display: inline-block; width: 120px; vertical-align: middle; margin-left: 6px; }
+
+/* ===== Taper au lieu de parler + phrases rapides ===== */
+.typed { flex: none; padding: 8px 16px 0; background: var(--panel); border-top: 1px solid var(--line); }
+.typed-row { display: flex; gap: 8px; align-items: center; }
+.typed-row input {
+  flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; border-radius: 10px;
+  background: var(--bg); color: var(--text); border: 1px solid var(--line); font-size: 16px;
+}
+.typed-row .primary { padding: 8px 14px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 2px; scrollbar-width: thin; }
+.chips[hidden] { display: none; }
+.chip {
+  flex: none; max-width: 260px; min-height: 44px; padding: 6px 12px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid var(--line); font-size: 13px; text-align: left;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chip:active { border-color: var(--speak); }
+.controls { border-top: 0; }
+
+/* Barre d'historique : les boutons défilent plutôt que de déborder */
+.history-actions { overflow-x: auto; max-width: 100%; }
+.small-btn.accent { border-color: var(--auto); color: #d9c8ff; }
+
+/* Réglages : deux langues côte à côte */
+.row.two { align-items: stretch; }
+.row.two > label { flex: 1; min-width: 0; }
+dialog textarea {
+  width: 100%; padding: 10px 12px; border-radius: 10px; resize: vertical;
+  background: var(--bg); color: var(--text); border: 1px solid var(--line); font: 15px/1.4 system-ui, sans-serif;
+}
+
+/* Compte rendu */
+.sum-out {
+  margin: 0; white-space: pre-wrap; word-wrap: break-word; font: 14px/1.5 system-ui, sans-serif;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+  max-height: 60dvh; overflow-y: auto;
+}
+#summaryDlg .dialog-actions { flex-wrap: wrap; }
