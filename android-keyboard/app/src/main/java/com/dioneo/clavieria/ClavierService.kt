@@ -170,7 +170,7 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
         kb.phonePad = cls == InputType.TYPE_CLASS_PHONE
         if (numberField) kb.setMode(KMode.ALPHA)
         kb.setMode(if (numberField) KMode.NUM else KMode.ALPHA)
-        toolbar.visibility = if (numberField) View.GONE else View.VISIBLE
+        toolbar.visibility = if (numberField || builtLand) View.GONE else View.VISIBLE
         strip.visibility = if (numberField) View.GONE else View.VISIBLE
         applyEnterKey(info)
         kb.setShift(Shift.OFF)
@@ -259,6 +259,21 @@ class ClavierService : InputMethodService(), KeyboardView.Listener {
             setPadding(dp(4), dp(4), dp(4), dp(4))
         }
         stripViews.clear()
+        if (builtLand) {
+            // Paysage : la barre IA est repliée ; ✦ la déplie ou la replie
+            s.addView(TextView(this).apply {
+                text = "✦"
+                textSize = 17f
+                gravity = Gravity.CENTER
+                setTextColor(skin.onAccent)
+                background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(skin.accent, 0xFF8E5CF7.toInt())).apply { cornerRadius = dp(12).toFloat() }
+                contentDescription = "Afficher la barre IA"
+                setOnClickListener {
+                    feedback.tick(prefs)
+                    toolbar.visibility = if (toolbar.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+                }
+            }, LinearLayout.LayoutParams(dp(40), MATCH).apply { marginEnd = dp(4) })
+        }
         for (i in 0 until 3) {
             if (i > 0) s.addView(View(this).apply { setBackgroundColor((skin.hint and 0x00FFFFFF) or 0x55000000) }, LinearLayout.LayoutParams(dp(1), dp(22)))
             val tv = TextView(this).apply {
